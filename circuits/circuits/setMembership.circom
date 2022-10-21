@@ -54,3 +54,6 @@ template SetMembership(n, k, d) {
   }
 
 }
+
+
+component main { public [root, TPreComputes, U] } = VerifyMembership(64, 4, 30);
