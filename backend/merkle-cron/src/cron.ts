@@ -4,11 +4,8 @@ import { execute } from "../.graphclient";
 
 const testProposals = gql`
   query proposals {
-    proposals(orderBy: startBlock, orderDirection: desc) {
+    proposals(orderBy: id, orderDirection: desc) {
       id
-      proposer {
-        id
-      }
     }
   }
 `;
@@ -16,6 +13,8 @@ const testProposals = gql`
 async function main() {
   const result = await execute(testProposals, {});
   console.log(result["data"]["proposals"]);
+
+  console.log(`num proposals: ${result["data"]["proposals"].length}`);
 }
 
 main();
