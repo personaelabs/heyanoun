@@ -11,6 +11,7 @@
   "devDependencies": {
     "@graphprotocol/client-cli": "2.2.15",
     "graphql": "16.6.0",
+    "graphql-tag": "2.12.6",
     "ts-node": "10.9.1"
   }
 }
