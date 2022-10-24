@@ -1,68 +1,55 @@
-import gql from "graphql-tag";
-import { NumericLiteral } from "typescript";
+import {
+  executeQuery,
+  buildPropsQuery,
+  buildDelegatesQuery,
+  buildOwnersQuery,
+} from "./queries";
 
-import { execute } from "../.graphclient";
+import { buildTreePoseidon } from "../merkle/src/merklePoseidon";
 
-// TODO:
-// 1. query all props
-// 2. query holders + delegates for a single prop
-// 3. merkleize 2
-// 4. stick stuff in postgres
-// 5. cron schedule + idempotence
+// TODO: retrieved from db
+let latestProp = 0;
 
-const testProposals = gql`
-  query proposals {
-    proposals(first: 1000) {
-      id
-    }
+// NOTE: idempotent
+async function run() {
+  let props = (await executeQuery(buildPropsQuery(latestProp)))["proposals"];
+  console.log(`Retrieved ${props.length} proposals`);
+
+  for (const { id, createdBlock } of props) {
+    // NOTE: we don't bother with separate queries for 1,2 anonymity set to limit thegraph queries
+    let delegates = (await executeQuery(buildDelegatesQuery(createdBlock, 1)))[
+      "delegates"
+    ];
+    console.log(`[prop ${id}] - Retrieved ${delegates.length} delegates`);
+
+    let owners = (await executeQuery(buildOwnersQuery(createdBlock, 1)))[
+      "accounts"
+    ];
+    console.log(`[prop ${id}] - Retrieved ${owners.length} owners`);
+
+    let anonSet1 = Array.from(
+      new Set([...delegates.map((d) => d.id), ...owners.map((d) => d.id)])
+    );
+    // NOTE: both merkle trees use default depth for now
+    let tree1 = await buildTreePoseidon(anonSet1);
+
+    console.log(
+      `[prop ${id}] - anonSet1 size: ${anonSet1.length}, root: ${tree1.root}`
+    );
+
+    let anonSet2 = Array.from(
+      new Set([
+        ...delegates.filter((d) => d.delegatedVotes >= 2).map((d) => d.id),
+        ...owners.filter((d) => d.tokenBalance >= 2).map((d) => d.id),
+      ])
+    );
+    let tree2 = await buildTreePoseidon(anonSet2);
+    console.log(
+      `[prop ${id}] - anonSet2 size: ${anonSet2.length}, root: ${tree2.root}`
+    );
+
+    // TODO: act on DB!
   }
-`;
-
-async function test() {
-  const result = await execute(testProposals, {});
-  console.log(result["data"]["proposals"]);
-
-  console.log(`num proposals: ${result["data"]["proposals"].length}`);
 }
 
-// TODO: future proof against >1000 results per query
-
-function buildDelegatesQuery(block: number, minDelegates: number) {
-  return gql`query {
-    delegates(first: 1000 block: { number: ${block} }, where: {delegatedVotes_gte: ${minDelegates}}) {
-      id
-      delegatedVotes
-    }
-  }`;
-}
-
-function buildOwnersQuery(block: number, minOwned: number) {
-  return gql`query {
-    accounts(first: 1000 block: { number: ${block} }, where: {tokenBalance_gte: ${minOwned}}) {
-      id
-      tokenBalance
-    }
-  }`;
-}
-
-// TODO: error handling for queries?
-async function getAnonymitySet(
-  block: number,
-  minDelegates: number,
-  minOwned: number
-) {
-  const delegatesRes = await execute(
-    buildDelegatesQuery(block, minDelegates),
-    {}
-  );
-  const delegates = delegatesRes["data"]["delegates"];
-  console.log(delegates);
-
-  const ownersRes = await execute(buildOwnersQuery(block, minOwned), {});
-  const owners = ownersRes["data"]["accounts"];
-  console.log(owners);
-}
-
-getAnonymitySet(15811106, 2, 2);
-
-// TODO: merkleize
+run();
