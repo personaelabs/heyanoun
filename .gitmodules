@@ -1,3 +1,6 @@
 [submodule "circuits/circuits/packages/efficient-zk-sig"]
 	path = circuits/circuits/packages/efficient-zk-sig
 	url = https://github.com/personaelabs/efficient-zk-sig
+[submodule "backend/merkle-cron/data"]
+	path = backend/merkle-cron/merkle
+	url = https://github.com/personaelabs/data.git
