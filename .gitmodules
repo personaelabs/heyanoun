@@ -1,3 +1,0 @@
-[submodule "circuits/circuits/packages/efficient-zk-sig"]
-	path = circuits/circuits/packages/efficient-zk-sig
-	url = https://github.com/personaelabs/efficient-zk-sig

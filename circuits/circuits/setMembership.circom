@@ -1,5 +1,6 @@
 pragma circom 2.0.6;
 
+
 include "./packages/efficient-zk-sig/circuits/ecdsa_verify_pubkey_to_addr.circom";
 include "./merkle.circom";
 
@@ -55,5 +56,4 @@ template SetMembership(n, k, d) {
 
 }
 
-
-component main { public [root, TPreComputes, U] } = VerifyMembership(64, 4, 30);
+component main { public [root, TPreComputes, U] } = SetMembership(64, 4, 30);

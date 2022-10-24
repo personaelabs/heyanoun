@@ -1,6 +1,6 @@
 pragma circom 2.0.6;
 
-include "../packages/circuits/circom-ecdsa/node_modules/circomlib/circuits/poseidon.circom";
+include "./packages/efficient-zk-sig/node_modules/circomlib/circuits/poseidon.circom";
 
 // if s == 0 returns [in[0], in[1]]
 // if s == 1 returns [in[1], in[0]]
