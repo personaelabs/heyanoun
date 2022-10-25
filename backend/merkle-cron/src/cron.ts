@@ -5,7 +5,7 @@ import {
   buildOwnersQuery,
 } from "./queries";
 
-import { buildTreePoseidon } from "../merkle/src/merklePoseidon";
+import { buildTreePoseidon } from "./merklePoseidon";
 
 // TODO: retrieved from db
 let latestProp = 0;
