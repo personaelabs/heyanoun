@@ -10,17 +10,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Prop {
+  id    Int     @id @default(autoincrement())
+  num   Int
+  Group Group[]
+}
+
 model Group {
   id   Int    @id @default(autoincrement())
   root String
 
-  prop_num  Int
-  num_nouns Int
+  propId Int
+  prop   Prop @relation(fields: [propId], references: [id])
 
-  full_name String @unique
+  typeId Int
+  type   GroupType @relation(fields: [typeId], references: [id])
 
   last_update DateTime @default(now())
   leaves      Leaf[]
+}
+
+// NOTE: i.e. 1-noun
+model GroupType {
+  id Int @id @default(autoincrement())
+
+  name  String  @unique
+  Group Group[]
 }
 
 model Leaf {
