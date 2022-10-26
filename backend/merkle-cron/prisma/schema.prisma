@@ -43,6 +43,6 @@ model Leaf {
   path    String[]
   indices String[]
 
-  group_id Int
-  group    Group @relation(fields: [group_id], references: [id])
+  groupId Int
+  group   Group @relation(fields: [groupId], references: [id])
 }
