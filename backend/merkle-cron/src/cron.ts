@@ -3,54 +3,20 @@ import {
   buildPropsQuery,
   buildDelegatesQuery,
   buildOwnersQuery,
-} from "./queries";
+} from "./graphql";
+
+import {
+  getLastFinalizedProp,
+  createGroupTypes,
+  prisma,
+  createProp,
+  createGroup,
+  finalizeProp,
+  createLeaves,
+} from "./db";
 
 import { buildTreePoseidon } from "./merklePoseidon";
-
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
-
-// NOTE: assumes that the latest prop in Prop has all relevant groups
-async function getLastFinalizedProp() {
-  const latestProps = await prisma.prop.findMany({
-    where: {
-      finalized: true,
-    },
-    orderBy: {
-      num: "desc",
-    },
-    take: 1,
-  });
-
-  if (latestProps.length === 0) {
-    return 0;
-  } else {
-    return latestProps[0].num;
-  }
-}
-
-// NOTE: when we add more group types, will have to think more about where to put this
-async function createGroupTypes() {
-  await prisma.groupType.upsert({
-    where: {
-      name: "1-noun",
-    },
-    update: {},
-    create: {
-      name: "1-noun",
-    },
-  });
-  await prisma.groupType.upsert({
-    where: {
-      name: "2-noun",
-    },
-    update: {},
-    create: {
-      name: "2-noun",
-    },
-  });
-}
+import { createProperty } from "typescript";
 
 // TODO: fix type errors!
 // NOTE: idempotent
@@ -93,63 +59,29 @@ async function run() {
     );
 
     console.log(`[prop ${id}] - creating prop in db`);
-    const prop = await prisma.prop.create({
-      data: {
-        num: id,
-      },
-    });
+    const prop = await createProp(id);
 
     console.log(`[prop ${id}] - creating groups in db`);
-    const group1 = await prisma.group.create({
-      data: {
-        root: tree1.root,
-        propId: prop.id,
-        typeId: 1,
-      },
-    });
-    const group2 = await prisma.group.create({
-      data: {
-        root: tree2.root,
-        propId: prop.id,
-        typeId: 2,
-      },
-    });
+    const group1 = await createGroup(tree1.root, prop.id, 1);
+    const group2 = await createGroup(tree2.root, prop.id, 2);
 
     console.log(`[prop ${id}] - creating group leaves in db`);
-    for (let leaf in tree1.leafToPathElements) {
-      let pathElements = tree1.leafToPathElements[leaf];
-      let pathIndices = tree1.leafToPathIndices[leaf];
-      await prisma.leaf.create({
-        data: {
-          data: leaf,
-          path: pathElements,
-          indices: pathIndices,
-          groupId: group1.id,
-        },
-      });
-    }
-    for (let leaf in tree2.leafToPathElements) {
-      let pathElements = tree2.leafToPathElements[leaf];
-      let pathIndices = tree2.leafToPathIndices[leaf];
-      await prisma.leaf.create({
-        data: {
-          data: leaf,
-          path: pathElements,
-          indices: pathIndices,
-          groupId: group2.id,
-        },
-      });
-    }
+    await createLeaves(
+      tree1.leafToPathElements,
+      tree1.leafToPathIndices,
+      group1.id
+    );
+    await createLeaves(
+      tree2.leafToPathElements,
+      tree2.leafToPathIndices,
+      group2.id
+    );
 
     console.log(`[prop ${id}] - finalizing!`);
-    await prisma.prop.update({
-      where: {
-        id: prop.id,
-      },
-      data: {
-        finalized: true,
-      },
-    });
+    await finalizeProp(prop.id);
+
+    // TODO: remove!
+    break;
   }
 }
 
