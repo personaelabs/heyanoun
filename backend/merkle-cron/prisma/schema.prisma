@@ -11,8 +11,11 @@ datasource db {
 }
 
 model Prop {
-  id    Int     @id @default(autoincrement())
-  num   Int
+  id  Int @id @default(autoincrement())
+  num Int
+
+  finalized Boolean @default(false)
+
   Group Group[]
 }
 
@@ -40,6 +43,7 @@ model GroupType {
 
 model Leaf {
   id      Int      @id @default(autoincrement())
+  data    String
   path    String[]
   indices String[]
 
