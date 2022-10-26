@@ -52,6 +52,7 @@ async function createGroupTypes() {
   });
 }
 
+// TODO: fix type errors!
 // NOTE: idempotent
 async function run() {
   await createGroupTypes();
