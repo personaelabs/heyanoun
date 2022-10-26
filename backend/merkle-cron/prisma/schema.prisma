@@ -11,10 +11,13 @@ datasource db {
 }
 
 model Group {
-  id        Int    @id @default(autoincrement())
-  root      String
-  prop_num  Int    @unique
-  full_name String
+  id   Int    @id @default(autoincrement())
+  root String
+
+  prop_num  Int
+  num_nouns Int
+
+  full_name String @unique
 
   last_update DateTime @default(now())
   leaves      Leaf[]

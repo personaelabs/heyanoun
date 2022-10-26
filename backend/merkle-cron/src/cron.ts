@@ -7,11 +7,17 @@ import {
 
 import { buildTreePoseidon } from "./merklePoseidon";
 
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
 // TODO: retrieved from db
 let latestProp = 0;
 
 // NOTE: idempotent
 async function run() {
+  // TODO: get latest prop from db
+
   let props = (await executeQuery(buildPropsQuery(latestProp)))["proposals"];
   console.log(`Retrieved ${props.length} proposals`);
 
@@ -52,4 +58,12 @@ async function run() {
   }
 }
 
-run();
+run()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
