@@ -14,6 +14,9 @@ const prisma = new PrismaClient();
 // NOTE: assumes that the latest prop in Prop has all relevant groups
 async function getLastFinalizedProp() {
   const latestProps = await prisma.prop.findMany({
+    where: {
+      finalized: true,
+    },
     orderBy: {
       num: "desc",
     },
@@ -87,7 +90,65 @@ async function run() {
     console.log(
       `[prop ${id}] - anonSet2 size: ${anonSet2.length}, root: ${tree2.root}`
     );
-    // TODO: create prop, groups
+
+    console.log(`[prop ${id}] - creating prop in db`);
+    const prop = await prisma.prop.create({
+      data: {
+        num: id,
+      },
+    });
+
+    console.log(`[prop ${id}] - creating groups in db`);
+    const group1 = await prisma.group.create({
+      data: {
+        root: tree1.root,
+        propId: prop.id,
+        typeId: 1,
+      },
+    });
+    const group2 = await prisma.group.create({
+      data: {
+        root: tree2.root,
+        propId: prop.id,
+        typeId: 2,
+      },
+    });
+
+    console.log(`[prop ${id}] - creating group leaves in db`);
+    for (let leaf in tree1.leafToPathElements) {
+      let pathElements = tree1.leafToPathElements[leaf];
+      let pathIndices = tree1.leafToPathIndices[leaf];
+      await prisma.leaf.create({
+        data: {
+          data: leaf,
+          path: pathElements,
+          indices: pathIndices,
+          groupId: group1.id,
+        },
+      });
+    }
+    for (let leaf in tree2.leafToPathElements) {
+      let pathElements = tree2.leafToPathElements[leaf];
+      let pathIndices = tree2.leafToPathIndices[leaf];
+      await prisma.leaf.create({
+        data: {
+          data: leaf,
+          path: pathElements,
+          indices: pathIndices,
+          groupId: group2.id,
+        },
+      });
+    }
+
+    console.log(`[prop ${id}] - finalizing!`);
+    await prisma.prop.update({
+      where: {
+        id: prop.id,
+      },
+      data: {
+        finalized: true,
+      },
+    });
   }
 }
 
