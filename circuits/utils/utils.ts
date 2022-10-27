@@ -43,3 +43,10 @@ export const prepareMerkleRootProof = (
     root: strRoot,
   };
 };
+
+export function JSONStringifyCustom(val: any) {
+  return JSON.stringify(
+    val,
+    (key, value) => (typeof value === "bigint" ? value.toString() : value) // return everything else unchanged
+  );
+}

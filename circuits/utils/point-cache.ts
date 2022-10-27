@@ -4,6 +4,8 @@ const BN = require("bn.js");
 const { splitToRegisters } = require("./utils");
 import { STRIDE, NUM_STRIDES } from "./config";
 
+export const loadSavedPreComputes = (point: any) => {};
+
 export const getPointPreComputes = (point: any) => {
   const keyPoint = ec.keyFromPublic({
     x: Buffer.from(point.x.toString(16), "hex"),
@@ -21,7 +23,6 @@ export const getPointPreComputes = (point: any) => {
 
       const x = splitToRegisters(gPower.x);
       const y = splitToRegisters(gPower.y);
-
       stride.push([x, y]);
     }
     gPowers.push(stride);

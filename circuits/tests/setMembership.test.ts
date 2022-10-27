@@ -1,32 +1,40 @@
 import BN from "bn.js";
 import { groth16 } from "snarkjs";
+import * as fs from "fs";
+import * as path from "path";
 import { SECP256K1_N } from "../utils/config";
 import { getPointPreComputes } from "../utils/point-cache";
-import { prepareMerkleRootProof, splitToRegisters } from "../utils/utils";
+import {
+  JSONStringifyCustom,
+  prepareMerkleRootProof,
+  splitToRegisters,
+} from "../utils/utils";
 import { createMerkleTree } from "../utils/merkleTree";
-const {
-  hashPersonalMessage,
-  ecsign,
-  pubToAddress,
-} = require("@ethereumjs/util");
+import { ethers } from "ethers";
+const { hashPersonalMessage, ecsign } = require("@ethereumjs/util");
 const elliptic = require("elliptic");
 const ec = new elliptic.ec("secp256k1");
+
+const POINT_CACHE_FILE = "savedPointCache.json";
+const SIGNATURE_CACHE_FILE = "savedSignature.json";
 
 const privKey = BigInt(
   "0xf5b552f608f5b552f608f5b552f6082ff5b552f608f5b552f608f5b552f6082f"
 );
 
+const ZKEY_PATH = "build/setMembership/setMembership.zkey";
+const WASM_PATH = "build/setMembership_js/setMembership.wasm";
+
 //TODO: optimize so we don't have to recalculate on a per test
 describe("", () => {
-  let poseidon: any;
-
   test("simple proof generation", async () => {
     const msgHash = hashPersonalMessage(Buffer.from("hello world"));
 
     const pubKey = ec.keyFromPrivate(privKey.toString(16)).getPublic();
 
     const merkleLeaves = [
-      pubToAddress(pubKey).toString(),
+      //recall public keys are 04 || uncompressed public key
+      ethers.utils.computeAddress("0x" + pubKey.encode("hex")),
       "0x199D5ED7F45F4eE35960cF22EAde2076e95B253F",
     ];
 
@@ -35,48 +43,108 @@ describe("", () => {
       merkleLeaves[0],
       merkleLeaves
     );
+
     const treeArtifacts = prepareMerkleRootProof(
       pathElements,
       pathIndices,
       pathRoot
     );
 
-    const { v, r, s } = ecsign(msgHash, privKey);
-
-    const isYOdd = (v - BigInt(27)) % BigInt(2);
-    const rPoint = ec.keyFromPublic(
-      ec.curve.pointFromX(new BN(r), isYOdd).encode("hex"),
-      "hex"
+    const existsCachedSignature = fs.existsSync(
+      path.join(__dirname, `./data/${SIGNATURE_CACHE_FILE}`)
     );
 
-    // Get the group element: -(m * r^−1 * G)
-    const rInv = new BN(r).invm(SECP256K1_N);
+    const existsCachedPoints = fs.existsSync(
+      path.join(__dirname, `./data/${POINT_CACHE_FILE}`)
+    );
 
-    // w = -(r^-1 * msg)
-    const w = rInv.mul(new BN(msgHash)).neg().umod(SECP256K1_N);
-    // U = -(w * G) = -(r^-1 * msg * G)
-    const U = ec.curve.g.mul(w);
+    let s: any;
+    let Ux: any;
+    let Uy: any;
+    let TPreComputes: any[][][];
+    // re-use the same signature so we don't have to keep re-computing the point cache
+    // which takes a long time
+    if (existsCachedSignature && existsCachedPoints) {
+      const signatureData = JSON.parse(
+        fs
+          .readFileSync(path.join(__dirname, `./data/${SIGNATURE_CACHE_FILE}`))
+          .toString()
+      );
 
-    // T = r^-1 * R
-    const T = rPoint.getPublic().mul(rInv);
+      s = signatureData.s;
+      Ux = signatureData.Ux;
+      Uy = signatureData.Uy;
 
-    console.log("Calculating point cache...");
-    console.time("Point cache calculation");
-    const TPreComputes = getPointPreComputes(T);
-    console.timeEnd("Point cache calculation");
+      TPreComputes = JSON.parse(
+        fs
+          .readFileSync(path.join(__dirname, `./data/${POINT_CACHE_FILE}`))
+          .toString()
+      );
+    } else {
+      const { v, r, s: sNew } = ecsign(msgHash, privKey);
+
+      s = sNew;
+
+      const isYOdd = (v - BigInt(27)) % BigInt(2);
+      const rPoint = ec.keyFromPublic(
+        ec.curve.pointFromX(new BN(r), isYOdd).encode("hex"),
+        "hex"
+      );
+      // Get the group element: -(m * r^−1 * G)
+      const rInv = new BN(r).invm(SECP256K1_N);
+
+      // w = -(r^-1 * msg)
+      const w = rInv.mul(new BN(msgHash)).neg().umod(SECP256K1_N);
+      // U = -(w * G) = -(r^-1 * msg * G)
+      const U = ec.curve.g.mul(w);
+
+      // T = r^-1 * R
+      const T = rPoint.getPublic().mul(rInv);
+
+      // re-write our signature and curve points
+      const signatureData: Record<string, string | string[] | bigint[]> = {
+        v: v.toString(),
+        r: splitToRegisters(r.toString("hex")),
+        s: splitToRegisters(s.toString("hex")),
+        Ux: U.x.toString(),
+        Uy: U.y.toString(),
+      };
+
+      Ux = U.x;
+      Uy = U.y;
+
+      fs.writeFileSync(
+        path.join(__dirname, `./data/${SIGNATURE_CACHE_FILE}`),
+        JSON.stringify(signatureData)
+      );
+
+      console.log("Calculating point cache...");
+      TPreComputes = getPointPreComputes(T);
+
+      // this will re-write point computes file
+      fs.writeFileSync(
+        path.join(__dirname, `./data/${POINT_CACHE_FILE}`),
+        JSONStringifyCustom(TPreComputes)
+      );
+      console.log("Done with Point cache calculation");
+    }
 
     const input = {
       TPreComputes,
-      U: [splitToRegisters(U.x), splitToRegisters(U.y)],
-      s: [splitToRegisters(s.toString("hex"))],
+      U: [splitToRegisters(Ux), splitToRegisters(Uy)],
+      s: s,
       ...treeArtifacts,
     };
 
+    console.log("Proving...");
     const { publicSignals, proof } = await groth16.fullProve(
       input,
-      "build/ecdsa_verify/build_ecdsa_verify_js/build_ecdsa_verify.wasm",
+      WASM_PATH,
       ZKEY_PATH
     );
+
+    console.log(publicSignals);
+
     expect(true).toBe(true);
   });
 });
