@@ -21,7 +21,7 @@ model Prop {
 
 model Group {
   id   Int    @id @default(autoincrement())
-  root BigInt
+  root String
 
   propId Int
   prop   Prop @relation(fields: [propId], references: [id])

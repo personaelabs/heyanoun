@@ -56,7 +56,7 @@ export async function createProp(num: number) {
 }
 
 export async function createGroup(
-  root: bigint,
+  root: string,
   propId: number,
   typeId: number
 ) {
@@ -82,8 +82,8 @@ export async function createLeaves(
   groupId: number
 ) {
   for (let leaf in leafToPathElements) {
-    let path = leafToPathElements[leaf];
-    let indices = leafToPathIndices[leaf];
+    let path = leafToPathElements[leaf].map((i) => i.toString());
+    let indices = leafToPathIndices[leaf].map((i) => i.toString());
     await prisma.leaf.upsert({
       where: {
         data_groupId: {
@@ -114,4 +114,8 @@ export async function finalizeProp(id: number) {
       finalized: true,
     },
   });
+}
+
+export async function disconnectDb() {
+  await prisma.$disconnect();
 }

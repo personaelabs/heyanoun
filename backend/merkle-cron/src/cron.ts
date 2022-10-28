@@ -8,17 +8,15 @@ import {
 import {
   getLastFinalizedProp,
   createGroupTypes,
-  prisma,
   createProp,
   createGroup,
   finalizeProp,
   createLeaves,
+  disconnectDb,
 } from "./db";
 
 import { buildTreePoseidon } from "./merklePoseidon";
-import { createProperty } from "typescript";
 
-// TODO: fix type errors!
 // NOTE: idempotent
 async function run() {
   await createGroupTypes();
@@ -62,15 +60,17 @@ async function run() {
     const prop = await createProp(parseInt(id));
 
     console.log(`[prop ${id}] - creating groups in db`);
-    const group1 = await createGroup(tree1.root, prop.id, 1);
-    const group2 = await createGroup(tree2.root, prop.id, 2);
+    const group1 = await createGroup(tree1.root.toString(), prop.id, 1);
+    const group2 = await createGroup(tree2.root.toString(), prop.id, 2);
 
-    console.log(`[prop ${id}] - creating group leaves in db`);
+    console.log(`[prop ${id}] - creating group leaves in db for group1`);
     await createLeaves(
       tree1.leafToPathElements,
       tree1.leafToPathIndices,
       group1.id
     );
+
+    console.log(`[prop ${id}] - creating group leaves in db for group2`);
     await createLeaves(
       tree2.leafToPathElements,
       tree2.leafToPathIndices,
@@ -79,18 +79,15 @@ async function run() {
 
     console.log(`[prop ${id}] - finalizing!`);
     await finalizeProp(prop.id);
-
-    // TODO: remove!
-    break;
   }
 }
 
 run()
   .then(async () => {
-    await prisma.$disconnect();
+    await disconnectDb();
   })
   .catch(async (e) => {
     console.error(e);
-    await prisma.$disconnect();
+    await disconnectDb();
     process.exit(1);
   });
