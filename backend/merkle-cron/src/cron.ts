@@ -59,7 +59,7 @@ async function run() {
     );
 
     console.log(`[prop ${id}] - creating prop in db`);
-    const prop = await createProp(id);
+    const prop = await createProp(parseInt(id));
 
     console.log(`[prop ${id}] - creating groups in db`);
     const group1 = await createGroup(tree1.root, prop.id, 1);
