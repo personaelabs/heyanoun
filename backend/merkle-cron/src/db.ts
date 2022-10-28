@@ -44,29 +44,36 @@ export async function createGroupTypes() {
 }
 
 export async function createProp(num: number) {
-  const prop = await prisma.prop.create({
-    data: {
+  return await prisma.prop.upsert({
+    where: {
+      num,
+    },
+    update: {},
+    create: {
       num,
     },
   });
-
-  return prop;
 }
 
 export async function createGroup(
-  root: string,
+  root: bigint,
   propId: number,
   typeId: number
 ) {
-  const group = await prisma.group.create({
-    data: {
+  return await prisma.group.upsert({
+    where: {
+      propId_typeId: {
+        propId,
+        typeId,
+      },
+    },
+    update: { root },
+    create: {
       root,
       propId,
       typeId,
     },
   });
-
-  return group;
 }
 
 export async function createLeaves(
@@ -77,8 +84,18 @@ export async function createLeaves(
   for (let leaf in leafToPathElements) {
     let path = leafToPathElements[leaf];
     let indices = leafToPathIndices[leaf];
-    await prisma.leaf.create({
-      data: {
+    await prisma.leaf.upsert({
+      where: {
+        data_groupId: {
+          data: leaf,
+          groupId,
+        },
+      },
+      update: {
+        path,
+        indices,
+      },
+      create: {
         data: leaf,
         path,
         indices,
