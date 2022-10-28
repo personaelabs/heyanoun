@@ -18,9 +18,6 @@ export async function createMerkleTree(
   poseidon = await buildPoseidon();
   F = poseidon.F;
 
-  //Yes the @ts-ignores are not ideal but unfortunately they're necessary because
-  //the type definitions do not support bigints
-  //@ts-ignore
   const tree = buildTreePoseidon(sanitizedLeaves);
 
   return {
