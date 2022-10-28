@@ -1,4 +1,3 @@
-import { Element } from "fixed-merkle-tree";
 import { REGISTERS } from "./config";
 
 const addHexPrefix = (str: string) => `0x${str}`;
@@ -28,9 +27,9 @@ export const registersToHex = (registers: any) => {
 };
 
 export const prepareMerkleRootProof = (
-  pathElements: Element[],
+  pathElements: any[],
   pathIndices: number[],
-  pathRoot: Element
+  pathRoot: any
 ) => {
   //@ts-ignore
   const strPathElements = pathElements.map((el: Element) => el.toString());
