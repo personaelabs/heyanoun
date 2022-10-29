@@ -13,8 +13,6 @@ export async function createMerkleTree(
   const currentBigInt = BigInt(sanitizedCurrent).toString();
   const sanitizedLeaves = leafAddrs.map((el) => el.toLocaleLowerCase());
 
-  console.log("COMPARE: ", currentBigInt);
-
   poseidon = await buildPoseidon();
   F = poseidon.F;
 

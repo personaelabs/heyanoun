@@ -43,7 +43,6 @@ template SetMembership(n, k, d) {
 
   signal address;
   address <== ecdsa.addr;
-  log(address);
 
   // Step 2: verify address is in group with merkle tree proof
   //check set membership of address in merkle root
