@@ -3,11 +3,11 @@ import gql from "graphql-tag";
 
 import { execute } from "../.graphclient";
 
-// TODO: future proof against >1000 results per query
-function buildPropsQuery(lastProp: number) {
+// TODO: future proof against >1000 total props
+function buildPropsQuery() {
   return gql`
     query {
-      proposals(first: 1000, orderBy: createdBlock, where: {id_gt: ${lastProp}}) {
+      proposals(first: 1000, orderBy: createdBlock) {
         id
         createdBlock
       }

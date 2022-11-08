@@ -24,10 +24,13 @@ async function run() {
   const lastProp = await getLastFinalizedProp();
   console.log(`Last finalized prop: ${lastProp}`);
 
-  let props = (await executeQuery(buildPropsQuery(lastProp)))["proposals"];
-  console.log(`Retrieved ${props.length} proposals`);
+  let allProps = (await executeQuery(buildPropsQuery()))["proposals"];
+  console.log(`Retrieved ${allProps.length} proposals`);
 
-  for (const { id, createdBlock } of props) {
+  let newProps = allProps.filter((p) => Number(p.id) > lastProp);
+  console.log(`Found ${newProps.length} new proposals`);
+
+  for (const { id, createdBlock } of newProps) {
     // NOTE: we don't bother with separate queries for 1,2 anonymity set to limit thegraph queries
     let delegates = (await executeQuery(buildDelegatesQuery(createdBlock, 1)))[
       "delegates"
