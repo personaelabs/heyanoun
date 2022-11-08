@@ -31,8 +31,21 @@ npx snarkjs groth16 setup "$BUILD_DIR"/"$CIRCUIT_NAME".r1cs "$PHASE1" "$BUILD_DI
 end=`date +%s`
 echo "DONE ($((end-start))s)"
 
+echo "****CONTRIBUTE TO PHASE 2 CEREMONY****"
+start=`date +%s`
+npx snarkjs zkey contribute "$BUILD_DIR"/"$CIRCUIT_NAME"_0.zkey "$BUILD_DIR"/"$CIRCUIT_NAME"_1.zkey --name="First contributor" -e="random text for entropy"
+end=`date +%s`
+echo "DONE ($((end-start))s)"
+
 echo "****GENERATING FINAL ZKEY****"
 start=`date +%s`
-NODE_OPTIONS="--max-old-space-size=56000" npx snarkjs zkey beacon "$BUILD_DIR"/"$CIRCUIT_NAME"_0.zkey "$BUILD_DIR"/"$CIRCUIT_NAME".zkey 12FE2EC467BD428DD0E966A6287DE2AF8DE09C2C5C0AD902B2C666B0895ABB75 10 -n="Final Beacon phase2"
+NODE_OPTIONS="--max-old-space-size=56000" npx snarkjs zkey beacon "$BUILD_DIR"/"$CIRCUIT_NAME"_1.zkey "$BUILD_DIR"/"$CIRCUIT_NAME"_final.zkey 12FE2EC467BD428DD0E966A6287DE2AF8DE09C2C5C0AD902B2C666B0895ABB75 10 -n="Final Beacon phase2"
+end=`date +%s`
+echo "DONE ($((end-start))s)"
+
+
+echo "****EXPORTING VKEY****"
+start=`date +%s`
+npx snarkjs zkey export verificationkey "$BUILD_DIR"/"$CIRCUIT_NAME"_final.zkey "$BUILD_DIR"/"$CIRCUIT_NAME"_vkey.json -v
 end=`date +%s`
 echo "DONE ($((end-start))s)"
