@@ -3,9 +3,28 @@ import Head from "next/head";
 import { useAccount } from "wagmi";
 import styles from "../styles/Home.module.css";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { PropsPayload } from "../types/api";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+
+const getProps = async () =>
+  (await axios.get<PropsPayload>("/api/getProps")).data;
 
 const Home: NextPage = () => {
   const { address, connector, isConnected } = useAccount();
+  const { isLoading, error, data, refetch } = useQuery<PropsPayload>({
+    queryKey: ["props"],
+    queryFn: getProps,
+    retry: 1,
+    enabled: address !== undefined,
+    staleTime: 10000,
+  });
+
+  const propsReverseOrder = useMemo(
+    () => data?.props.slice(0).reverse(),
+    data?.props
+  );
 
   // TODO: reuse duplicated code
   if (isConnected) {
@@ -23,6 +42,21 @@ const Home: NextPage = () => {
           </nav>
 
           <h2>heyanoun</h2>
+          {isLoading ? (
+            <p>loading props...</p>
+          ) : (
+            <div>
+              {propsReverseOrder &&
+                propsReverseOrder.map((prop, index) => {
+                  return (
+                    <div key={index}>
+                      <p>number: {prop.num}</p>
+                      <p>finalized: {prop.finalized}</p>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
         </main>
 
         <footer className={styles.footer}>personae</footer>
