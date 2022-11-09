@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Prop {
+  id  Int @id @default(autoincrement())
+  num Int @unique
+
+  finalized Boolean @default(false)
+
+  Group Group[]
+}
+
+model Group {
+  id   Int    @id @default(autoincrement())
+  root String
+
+  propId Int
+  prop   Prop @relation(fields: [propId], references: [id])
+
+  typeId Int
+  type   GroupType @relation(fields: [typeId], references: [id])
+
+  last_update DateTime @default(now())
+  leaves      Leaf[]
+
+  @@unique([propId, typeId])
+}
+
+// NOTE: i.e. 1-noun
+model GroupType {
+  id Int @id @default(autoincrement())
+
+  name  String  @unique
+  Group Group[]
+}
+
+model Leaf {
+  id      Int      @id @default(autoincrement())
+  data    String
+  path    String[]
+  indices String[]
+
+  groupId Int
+  group   Group @relation(fields: [groupId], references: [id])
+
+  @@unique([data, groupId])
+}
