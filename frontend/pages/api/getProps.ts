@@ -1,13 +1,16 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import type { NextApiRequest, NextApiResponse } from 'next'
+import { NextApiRequest, NextApiResponse } from "next/types";
+import { ErrorResponse, PropsPayload } from "../../types/api";
+import { prisma } from "../../utils/prisma";
 
-type Data = {
-  name: string
-}
-
-export default function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<Data>
+export default async function getProps(
+  _req: NextApiRequest,
+  res: NextApiResponse<PropsPayload | ErrorResponse>
 ) {
-  res.status(200).json({ name: 'John Doe' })
+  try {
+    const props = await prisma.prop.findMany();
+    res.status(200).json({ props });
+  } catch (ex: unknown) {
+    console.error(ex);
+    res.status(404).json({ err: "Unexpected error occurred" });
+  }
 }
