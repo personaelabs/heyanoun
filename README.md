@@ -12,3 +12,4 @@ nouns prop 150 https://nouns.wtf/vote/150
 | set up twitter bot              | Lakshman | in progress                    |
 | submission/verification backend | Lakshman |                                |
 | add posts db                    | Lakshman |                                |
+| add nounders anon set (quick)                  | Lakshman |                                |
