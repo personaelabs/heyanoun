@@ -41,7 +41,7 @@ const Home: NextPage = () => {
             <p>{address}</p>
           </nav>
 
-          <h2>heyanoun</h2>
+          <h2 className="">heyanoun</h2>
           {isLoading ? (
             <p>loading props...</p>
           ) : (
@@ -77,7 +77,7 @@ const Home: NextPage = () => {
           <ConnectButton />
         </nav>
 
-        <h2>heyanoun</h2>
+        <h2 className="text-3xl font-bold">heyanouns</h2>
       </main>
 
       <footer className={styles.footer}>personae</footer>
