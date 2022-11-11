@@ -24,7 +24,7 @@ const fakeProposal = {
 };
 
 const Modal: React.FC<IModalProps> = ({ isOpen, handleClose }) => {
-  // let completeButtonRef = useRef(null);
+  let completeButtonRef = useRef(null);
 
   const startVal = fakeProposal.description.indexOf("\n\n") + 2;
   const cleanedDescription = fakeProposal.description.slice(startVal);
@@ -32,7 +32,7 @@ const Modal: React.FC<IModalProps> = ({ isOpen, handleClose }) => {
   return (
     <Dialog
       open={isOpen}
-      // initialFocus={completeButtonRef}
+      initialFocus={completeButtonRef}
       onClose={handleClose}
       className="relative z-50"
     >
@@ -44,7 +44,7 @@ const Modal: React.FC<IModalProps> = ({ isOpen, handleClose }) => {
         <div className="flex min-h-full items-center justify-center">
           <Dialog.Panel className="w-full max-w-5xl bg-white">
             <div>
-              <div className="px-12 py-12">
+              <div className="px-12 py-10">
                 <ReactMarkdown className={styles.markdown}>
                   {cleanedDescription}
                 </ReactMarkdown>
