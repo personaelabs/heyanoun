@@ -1,5 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { ErrorResponse, PropTreesPayload } from "../../types/api";
+import { createMerkleTree } from "../../utils/merkleTree";
+import {
+  buildNoundersGroupWithType,
+  nounderAddresses,
+  noundersGroupId,
+} from "../../utils/nounders";
 import { prisma } from "../../utils/prisma";
 
 function leafDataToAddress(data: string): string {
@@ -8,7 +14,10 @@ function leafDataToAddress(data: string): string {
 
 // NOTE: could do this transformation in the table, but given that join queries only take ~1-2s rn,
 // seems ok to avoid extra complexity
-function groupsToResponsePayload(groups: any[]): PropTreesPayload {
+async function groupsToResponsePayload(
+  groups: any[],
+  propId: number
+): Promise<PropTreesPayload> {
   let responsePayload: PropTreesPayload = {
     groups: [],
     trees: {},
@@ -35,6 +44,21 @@ function groupsToResponsePayload(groups: any[]): PropTreesPayload {
     }
   }
 
+  // NOTE: add nounders group
+  responsePayload.groups.push(buildNoundersGroupWithType(propId));
+
+  for (const address of nounderAddresses) {
+    const { pathElements, pathIndices } = await createMerkleTree(
+      address,
+      nounderAddresses
+    );
+
+    responsePayload.trees[address][noundersGroupId] = {
+      pathElements,
+      pathIndices,
+    };
+  }
+
   return responsePayload;
 }
 
@@ -45,12 +69,13 @@ export default async function getPropTrees(
   _req: NextApiRequest,
   res: NextApiResponse<PropTreesPayload | ErrorResponse>
 ) {
+  const propId = Number(_req.query.propId);
   try {
     console.log("starting query");
     let start = new Date().getTime();
     const groups = await prisma.group.findMany({
       where: {
-        propId: Number(_req.query["propId"]),
+        propId,
       },
       include: {
         leaves: true,
@@ -59,7 +84,7 @@ export default async function getPropTrees(
     });
     console.log(`query took ${new Date().getTime() - start}ms`);
 
-    res.status(200).json(groupsToResponsePayload(groups));
+    res.status(200).json(await groupsToResponsePayload(groups, propId));
   } catch (ex: unknown) {
     console.error(ex);
     res.status(404).json({ err: "Unexpected error occurred" });
