@@ -3,7 +3,7 @@ import Head from "next/head";
 import { useAccount } from "wagmi";
 import styles from "../styles/Home.module.css";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { PropsPayload } from "../types/api";
+import { PropTreesPayload, PropsPayload } from "../types/api";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -11,20 +11,34 @@ import { useMemo } from "react";
 const getProps = async () =>
   (await axios.get<PropsPayload>("/api/getProps")).data;
 
+const getPropTrees = async (propId: number) =>
+  (
+    await axios.get<PropTreesPayload>("/api/getPropTrees", {
+      params: { propId },
+    })
+  ).data;
+
+// NOTE: we must serve the entire payload of address -> group to the frontend
+// *can't allow the backend to know which address is making a post*
+// this is a nontrivial and growing  payload, so it's inevitable that we serve it somewhere easy to access
 const Home: NextPage = () => {
+  const expandPropId = 168;
+
   const { address, connector, isConnected } = useAccount();
-  const { isLoading, error, data, refetch } = useQuery<PropsPayload>({
-    queryKey: ["props"],
-    queryFn: getProps,
+  const { isLoading, error, data, refetch } = useQuery<PropTreesPayload>({
+    queryKey: [],
+    queryFn: () => getPropTrees(expandPropId),
     retry: 1,
     enabled: address !== undefined,
     staleTime: 10000,
   });
 
-  const propsReverseOrder = useMemo(
-    () => data?.props.slice(0).reverse(),
-    data?.props
-  );
+  const groups = useMemo(() => data?.groups, data?.groups);
+
+  // const propsReverseOrder = useMemo(
+  //   () => data?.props.slice(0).reverse(),
+  //   data?.props
+  // );
 
   // TODO: reuse duplicated code
   if (isConnected) {
@@ -43,20 +57,25 @@ const Home: NextPage = () => {
 
           <h2>heyanoun</h2>
           {isLoading ? (
-            <p>loading props...</p>
+            <p>loading groups for prop {expandPropId}</p>
           ) : (
-            <div>
-              {propsReverseOrder &&
-                propsReverseOrder.map((prop, index) => {
-                  return (
-                    <div key={index}>
-                      <p>number: {prop.num}</p>
-                      <p>finalized: {prop.finalized}</p>
-                    </div>
-                  );
-                })}
-            </div>
+            <div>{groups && <p>{groups.length} groups found</p>}</div>
           )}
+          {/*  {isLoading ? (
+             <p>loading props...</p>
+           ) : (
+             <div>
+               {propsReverseOrder &&
+                 propsReverseOrder.map((prop, index) => {
+                   return (
+                     <div key={index}>
+                 <p>number: {prop.num}</p>
+                       <p>finalized: {prop.finalized}</p>
+                     </div>
+                   );
+                 })}
+             </div>
+           )} */}
         </main>
 
         <footer className={styles.footer}>personae</footer>
