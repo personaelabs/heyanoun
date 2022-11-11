@@ -1,15 +1,19 @@
 import { useState, useRef } from "react";
 import { Dialog } from "@headlessui/react";
 
-const Modal = () => {
-  let [isOpen, setIsOpen] = useState(true);
+interface IModalProps {
+  isOpen: boolean;
+  handleClose: (isOpen: boolean) => void;
+}
+
+const Modal: React.FC<IModalProps> = ({ isOpen, handleClose }) => {
   let completeButtonRef = useRef(null);
 
   return (
     <Dialog
       open={isOpen}
       initialFocus={completeButtonRef}
-      onClose={() => setIsOpen(false)}
+      onClose={handleClose}
       className="relative z-50"
     >
       {/* The backdrop, rendered as a fixed sibling to the panel container */}

@@ -7,7 +7,6 @@ import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import ProposalRow from "../components/proposalRow";
-import Modal from "../components/modal";
 
 const getProps = async () =>
   (await axios.get<PropsPayload>("/api/getProps")).data;
@@ -57,8 +56,6 @@ const Home: NextPage = () => {
             <img className="w-40" src="nouns.png" />
           </div>
         </div>
-
-        <Modal />
 
         <div className="bg-gray-50">
           <div className="max-w-3xl mx-auto py-10">
