@@ -34,20 +34,25 @@ const Home: NextPage = () => {
       </Head>
 
       <main>
-        <div className="bg-black dots py-8">
-          <nav className="pr-6 flex justify-end">
-            <ConnectButton />
-          </nav>
-          <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-            <div className="lg:text-center max-w-2xl mx-auto">
-              <h1 className="text-5xl text-white font-bold leading-14">
-                Give Feedback On Proposals Anonymously
-              </h1>
-              <p className="mt-4 text-xl font-normal leading-8 text-white">
-                Anoun allows noun-holders to give feedback on proposals while
-                maintaining their privacy using zero-knowledge proofs.{" "}
-              </p>
+        <div className="bg-black dots">
+          <div className="pt-8">
+            <nav className="pr-6 flex justify-end">
+              <ConnectButton />
+            </nav>
+            <div className="max-w-7xl mx-auto pt-12 pb-8 px-4 sm:px-6 lg:px-8">
+              <div className="lg:text-center max-w-2xl mx-auto">
+                <h1 className="text-5xl text-white font-bold leading-14">
+                  Give Feedback On Proposals Anonymously
+                </h1>
+                <p className="mt-4 text-xl font-normal leading-8 text-white">
+                  Anoun allows noun-holders to give feedback on proposals while
+                  maintaining their privacy using zero-knowledge proofs.{" "}
+                </p>
+              </div>
             </div>
+          </div>
+          <div className="flex justify-center">
+            <img className="w-40" src="nouns.png" />
           </div>
         </div>
 
