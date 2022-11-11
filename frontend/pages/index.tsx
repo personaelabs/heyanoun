@@ -57,14 +57,22 @@ const Home: NextPage = () => {
           </div>
         </div>
 
-        <div className="bg-gray-50">
+        <div className="bg-gray-50 min-h-screen">
           <div className="max-w-3xl mx-auto py-10">
             <h2 className="font-semibold text-3xl"> Proposals</h2>
             <div className="mt-4">
               {isConnected && isLoading ? (
-                <p>loading props...</p>
+                <div className="bg-gray-100 border border-gray-300 p-12 py-24 rounded-md flex justify-center text-gray-800">
+                  <p>loading props...</p>
+                </div>
               ) : (
                 <div className="space-y-4">
+                  {propsReverseOrder == undefined && (
+                    <div className="bg-gray-100 border border-gray-300 p-12 py-24 rounded-md flex justify-center text-gray-800">
+                      Please connect your wallet to continue
+                    </div>
+                  )}
+
                   {propsReverseOrder &&
                     propsReverseOrder.map((prop) => {
                       return <ProposalRow key={prop.num} number={prop.num} />;
