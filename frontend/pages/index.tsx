@@ -57,7 +57,7 @@ const Home: NextPage = () => {
           </div>
         </div>
 
-        <div className="bg-gray-50 min-h-screen">
+        <div className="bg-gray-50">
           <div className="max-w-3xl mx-auto py-10">
             <h2 className="font-semibold text-3xl"> Proposals</h2>
             <div className="mt-4">
