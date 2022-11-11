@@ -31,15 +31,3 @@ export const ProofComment = () => (
     </div>
   </div>
 );
-
-// <div className="rounded-md transition-all shadow-sm bg-white p-5 flex flex-col items-center justify-between border border-gray-200 hover:border-gray-300 hover:cursor-pointer">
-//   <div className="space-x-2">
-//     <span className="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-0.5 text-sm font-medium text-gray-800">
-//       Ends in 5 hours
-//     </span>
-//     <span className="inline-flex items-center rounded-md bg-green-100 px-2.5 py-0.5 text-sm font-medium text-green-800">
-//       Active
-//     </span>
-//   </div>
-//   <div className="bg-gray-100 p-10"></div>
-// </div>
