@@ -6,6 +6,7 @@ import { PropsPayload } from "../types/api";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import ProposalRow from "../components/proposalRow";
 
 const getProps = async () =>
   (await axios.get<PropsPayload>("/api/getProps")).data;
@@ -59,21 +60,18 @@ const Home: NextPage = () => {
         <div className="bg-gray-50">
           <div className="max-w-3xl mx-auto py-10">
             <h2 className="font-semibold text-3xl"> Proposals</h2>
-            {isConnected && isLoading ? (
-              <p>loading props...</p>
-            ) : (
-              <div>
-                {propsReverseOrder &&
-                  propsReverseOrder.map((prop, index) => {
-                    return (
-                      <div key={index}>
-                        <p>number: {prop.num}</p>
-                        <p>finalized: {prop.finalized}</p>
-                      </div>
-                    );
-                  })}
-              </div>
-            )}
+            <div className="mt-4">
+              {isConnected && isLoading ? (
+                <p>loading props...</p>
+              ) : (
+                <div className="space-y-4">
+                  {propsReverseOrder &&
+                    propsReverseOrder.map((prop) => {
+                      return <ProposalRow key={prop.num} number={prop.num} />;
+                    })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>
