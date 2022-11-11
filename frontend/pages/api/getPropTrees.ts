@@ -3,7 +3,7 @@ import { ErrorResponse, PropTreesPayload } from "../../types/api";
 import { prisma } from "../../utils/prisma";
 
 function leafDataToAddress(data: string): string {
-  return BigInt(data).toString(16).padStart(40, "0");
+  return "0x" + BigInt(data).toString(16).padStart(40, "0");
 }
 
 // NOTE: could do this transformation in the table, but given that join queries only take ~1-2s rn,
