@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Modal from "./modal";
+import Modal from "./Modal/modal";
 
 interface IProposalRowProps {
   number: number;
