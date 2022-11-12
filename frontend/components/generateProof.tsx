@@ -8,7 +8,9 @@ import { SECP256K1_N } from "../utils/config";
 import BN from "bn.js";
 import { getPointPreComputes } from "../utils/wasmPrecompute";
 import { PointPreComputes } from "../types/zk";
-import { splitToRegisters } from "../utils/utils";
+import { prepareMerkleRootProof, splitToRegisters } from "../utils/utils";
+import { createMerkleTree } from "../utils/merkleTree";
+import { downloadZKey } from "../utils/zkp";
 const elliptic = require("elliptic");
 const ec = new elliptic.ec("secp256k1");
 
@@ -22,13 +24,26 @@ interface Props {
 interface SignaturePostProcessingContents {
   TPreComputes: PointPreComputes;
   s: string;
-  Ux: string[] | bigint[];
-  Uy: string[] | bigint[];
+  U: string[][] | bigint[][];
+}
+
+interface MerkleTreeProofData {
+  root: string;
+  pathElements: string[];
+  pathIndices: string[];
 }
 
 export const ProofComment = ({ address, propNumber, propId }: Props) => {
-  const signaturePostProcessData =
-    React.useRef<SignaturePostProcessingContents>();
+  const merkleTreeProofData = React.useRef<MerkleTreeProofData>();
+  const [commentMsg, setCommentMsg] = React.useState<string>("");
+  const [loadingText, setLoadingText] = React.useState<string | undefined>(
+    undefined
+  );
+  const [successProofGen, setSuccessProofGen] = React.useState<
+    boolean | undefined
+  >(undefined);
+
+  const [groupId, setGroupId] = React.useState<number>(1);
 
   const { data, error, isLoading, signMessage } = useSignMessage({
     async onSuccess(data, variables) {
@@ -56,27 +71,40 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       const T = rPoint.getPublic().mul(rInv);
 
       const TPreComputes = await getPointPreComputes(T.encode("hex"));
-      signaturePostProcessData.current = {
+      const signatureArtifacts: SignaturePostProcessingContents = {
         TPreComputes,
-        s,
-        Ux: splitToRegisters(U.x),
-        Uy: splitToRegisters(U.y),
+        s: splitToRegisters(s.substring(2)),
+        U: [splitToRegisters(U.x), splitToRegisters(U.y)],
       };
+      await generateProof(signatureArtifacts);
     },
   });
 
-  const [commentMsg, setCommentMsg] = React.useState<string>("");
-  const [loadingText, setLoadingText] = React.useState<string | undefined>(
-    undefined
+  const generateProof = React.useCallback(
+    async (artifacts: SignaturePostProcessingContents) => {
+      if (!merkleTreeProofData.current) {
+        throw new Error("Missing merkle tree data");
+      }
+      //TODO: add loading state or progress bar first time it downloads zkey
+      await downloadZKey();
+
+      const proofInputs = { ...artifacts, ...merkleTreeProofData.current };
+
+      const worker = new Worker("./worker.js");
+      worker.postMessage([proofInputs]);
+      worker.onmessage = async function (e) {
+        const { proof, publicSignals } = e.data;
+        console.log("PROOF SUCCESSFULLY GENERATED: ", proof, publicSignals);
+        // TODO: post to IPFS or store in our db
+        setSuccessProofGen(true);
+        // TODO: add toast showing success
+        setLoadingText(undefined);
+      };
+    },
+    []
   );
-  const [successProofGen, setSuccessProofGen] = React.useState<
-    boolean | undefined
-  >(undefined);
 
-  const [groupId, setGroupId] = React.useState<number>(1);
-
-  const generateProof = React.useCallback(async () => {
-    let updateLoading: NodeJS.Timer | undefined = undefined;
+  const prepareProof = React.useCallback(async () => {
     try {
       // const merkleTreeData = await axios.get("/api/getPropGroup", {
       //   params: {
@@ -86,7 +114,21 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       //   },
       // });
 
-      // console.log("success merkle data: ", merkleTreeData);
+      // TODO: REMOVE THIS, generating dummy merkle tree to test proof generation works
+      const { pathElements, pathIndices, pathRoot } = await createMerkleTree(
+        "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
+        [
+          "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
+          "0x199D5ED7F45F4eE35960cF22EAde2076e95B253F",
+        ]
+      );
+      const merkleTreeData = prepareMerkleRootProof(
+        pathElements,
+        pathIndices,
+        pathRoot
+      );
+
+      merkleTreeProofData.current = merkleTreeData;
 
       const groupMessage =
         groupId === 1
@@ -94,12 +136,14 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
           : groupId === 2
           ? "I own two or more Nouns"
           : "I am a Nounder";
-      const data = signMessage({
+      // triggers callback which will call generateProof when it's done
+      signMessage({
         message: `As of Prop ${propId}, I attest that ${groupMessage} and the hash (keccak) of the message I'm posting is ${ethers.utils.hashMessage(
           commentMsg
         )}`,
       });
     } catch (ex: unknown) {
+      // TODO: cleaner error handling
       throw ex;
     }
   }, [commentMsg, groupId, propId, signMessage]);
@@ -125,7 +169,7 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       <div className="py-2"></div>
       <div className="flex flex-row w-full justify-end">
         <Button
-          onClickHandler={generateProof}
+          onClickHandler={prepareProof}
           color={"white"}
           backgroundColor={"black"}
         >

@@ -28,16 +28,6 @@ export const downloadProofFiles = async function (filename: string) {
   return await downloadFromFilename(`${filename}`);
 };
 
-export const prepareProofInputs = async ({
-  pointHex,
-}: {
-  pointHex: string;
-}) => {
-  //get merkle tree
-
-  //download proving key
+export const downloadZKey = async () => {
   await downloadProofFiles(ZKEY_NAME);
-
-  //compute cached points
-  const pointCache = await getPointPreComputes(pointHex);
 };
