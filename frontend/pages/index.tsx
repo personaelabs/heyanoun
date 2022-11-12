@@ -75,11 +75,15 @@ const Home: NextPage = () => {
                   )}
 
                   {propsReverseOrder &&
+                    address &&
                     propsReverseOrder.map((prop, index) => {
                       return (
                         <div key={index}>
                           <ProposalRow key={prop.num} number={prop.num} />
-                          <ProofComment />
+                          <ProofComment
+                            address={address}
+                            propNumber={prop.num}
+                          />
                         </div>
                       );
                     })}

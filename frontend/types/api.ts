@@ -7,3 +7,9 @@ export interface PropsPayload {
 export interface ErrorResponse {
   err: string;
 }
+
+export interface PropGroupPayload {
+  root: string;
+  pathElements: string[];
+  pathIndices: string[];
+}

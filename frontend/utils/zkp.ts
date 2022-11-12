@@ -1,10 +1,11 @@
 import localforage from "localforage";
+import { getPointPreComputes } from "./wasmPrecompute";
 
 const LOAD_URL = "https://d27ahxc61uj811.cloudfront.net/";
 const ZKEY_NAME = "setMembership_final.zkey";
 
 async function downloadFromFilename(filename: string) {
-  const link = loadURL + filename;
+  const link = LOAD_URL + filename;
   try {
     const zkeyResp = await fetch(link, {
       method: "GET",
@@ -28,12 +29,15 @@ export const downloadProofFiles = async function (filename: string) {
 };
 
 export const prepareProofInputs = async ({
-  filename,
+  pointHex,
 }: {
-  filename: string;
+  pointHex: string;
 }) => {
   //get merkle tree
 
   //download proving key
-  await downloadProofFiles(filename);
+  await downloadProofFiles(ZKEY_NAME);
+
+  //compute cached points
+  const pointCache = await getPointPreComputes(pointHex);
 };
