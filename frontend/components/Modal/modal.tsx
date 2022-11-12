@@ -3,6 +3,7 @@ import { Dialog } from "@headlessui/react";
 import ReactMarkdown from "react-markdown";
 import styles from "./Modal.module.css";
 import CommentView from "../commentView";
+import CommentWriter from "../commentWriter";
 
 interface IModalProps {
   isOpen: boolean;
@@ -52,6 +53,7 @@ const Modal: React.FC<IModalProps> = ({ isOpen, handleClose }) => {
               </div>
               <div className="bg-gray-50 border-t border-gray-200 py-8 pb-16 space-y-4">
                 <CommentView />
+                <CommentWriter />
               </div>
             </div>
           </Dialog.Panel>

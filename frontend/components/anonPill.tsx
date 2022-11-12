@@ -12,7 +12,7 @@ interface IAnonPill {
 }
 
 const AnonPill: React.FC<IAnonPill> = ({
-  isActive = false,
+  isActive = true,
   nounSet = NounSet.ManyNouns,
 }) => {
   let nounSVGPath;
@@ -30,22 +30,33 @@ const AnonPill: React.FC<IAnonPill> = ({
     nounSVGPath = `/pseudo-noun-red.svg`;
   }
 
+  if (!isActive) {
+    nounSVGPath = `/pseudo-noun-green.svg`;
+  }
+
   return (
     <div
-      className={classnames("border rounded-2xl p-[2px] flex items-center", {
-        "bg-purple-50 border-purple-100": NounSet.Nounder === nounSet,
-        "bg-green-50 border-green-100": NounSet.ManyNouns === nounSet,
-        "bg-pink-50 border-pink-100": NounSet.SingleNoun === nounSet,
-        grayscale: isActive,
-      })}
+      className={classnames(
+        "hover:cursor-pointer border rounded-2xl p-[2px] flex items-center",
+        {
+          "bg-purple-50 border-purple-100":
+            NounSet.Nounder === nounSet && isActive,
+          "bg-green-50 border-green-100":
+            NounSet.ManyNouns === nounSet && isActive,
+          "bg-pink-50 border-pink-100":
+            NounSet.SingleNoun === nounSet && isActive,
+          "bg-gray-100 border-gray-200": !isActive,
+        }
+      )}
     >
       <div
         className={classnames(
           "rounded-full w-7 h-7 flex items-center justify-center",
           {
-            "bg-purple-100": nounSet === NounSet.Nounder,
-            "bg-green-100": nounSet === NounSet.ManyNouns,
-            "bg-pink-100": nounSet === NounSet.SingleNoun,
+            "bg-purple-100": nounSet === NounSet.Nounder && isActive,
+            "bg-green-100": nounSet === NounSet.ManyNouns && isActive,
+            "bg-pink-100": nounSet === NounSet.SingleNoun && isActive,
+            "bg-gray-200 grayscale": !isActive,
           }
         )}
       >
@@ -56,9 +67,10 @@ const AnonPill: React.FC<IAnonPill> = ({
         className={classnames(
           "font-bold text-[11px] uppercase px-2 flex items-center tracking-wider max-h-5 mt-[2px]",
           {
-            "text-purple-900": NounSet.Nounder === nounSet,
-            "text-green-900": NounSet.ManyNouns === nounSet,
-            "text-pink-900": NounSet.SingleNoun === nounSet,
+            "text-purple-900": NounSet.Nounder === nounSet && isActive,
+            "text-green-900": NounSet.ManyNouns === nounSet && isActive,
+            "text-pink-900": NounSet.SingleNoun === nounSet && isActive,
+            "text-gray-600 grayscale": !isActive,
           }
         )}
       >
