@@ -1,6 +1,6 @@
 import { PointPreComputes } from "../types/zk";
-import initWasm from "./getPreComputes";
-import { compute_powers } from "./getPrecomputesHelpers";
+import initWasm from "./wasm/getPrecomputesHelpers";
+import { compute_powers } from "./wasm/getPrecomputesHelpers";
 
 export const getPointPreComputes = async (
   pointHex: string

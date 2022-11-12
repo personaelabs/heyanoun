@@ -1,23 +1,22 @@
-// TODO: fix types and ts-ignores
-let wasm: any;
+let wasm;
 
 const heap = new Array(32).fill(undefined);
 
 heap.push(undefined, null, true, false);
 
-function getObject(idx: any) {
+function getObject(idx) {
   return heap[idx];
 }
 
 let heap_next = heap.length;
 
-function dropObject(idx: any) {
+function dropObject(idx) {
   if (idx < 36) return;
   heap[idx] = heap_next;
   heap_next = idx;
 }
 
-function takeObject(idx: any) {
+function takeObject(idx) {
   const ret = getObject(idx);
   dropObject(idx);
   return ret;
@@ -39,21 +38,20 @@ function getUint8Memory0() {
   return cachedUint8Memory0;
 }
 
-function getStringFromWasm0(ptr: any, len: any) {
+function getStringFromWasm0(ptr, len) {
   return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
 }
 
 let WASM_VECTOR_LEN = 0;
 
-// @ts-ignore
 const cachedTextEncoder = new TextEncoder("utf-8");
 
 const encodeString =
   typeof cachedTextEncoder.encodeInto === "function"
-    ? function (arg: any, view: any) {
+    ? function (arg, view) {
         return cachedTextEncoder.encodeInto(arg, view);
       }
-    : function (arg: any, view: any) {
+    : function (arg, view) {
         const buf = cachedTextEncoder.encode(arg);
         view.set(buf);
         return {
@@ -62,7 +60,7 @@ const encodeString =
         };
       };
 
-function passStringToWasm0(arg: any, malloc: any, realloc: any) {
+function passStringToWasm0(arg, malloc, realloc) {
   if (realloc === undefined) {
     const buf = cachedTextEncoder.encode(arg);
     const ptr = malloc(buf.length);
@@ -94,7 +92,6 @@ function passStringToWasm0(arg: any, malloc: any, realloc: any) {
     const view = getUint8Memory0().subarray(ptr + offset, ptr + len);
     const ret = encodeString(arg, view);
 
-    // @ts-ignore
     offset += ret.written;
   }
 
@@ -114,7 +111,7 @@ function getInt32Memory0() {
  * @param {string} point_row
  * @returns {string}
  */
-export function compute_powers(point_row: any) {
+export function compute_powers(point_row) {
   try {
     const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
     const ptr0 = passStringToWasm0(
@@ -129,7 +126,6 @@ export function compute_powers(point_row: any) {
     return getStringFromWasm0(r0, r1);
   } finally {
     wasm.__wbindgen_add_to_stack_pointer(16);
-    // @ts-ignore
     wasm.__wbindgen_free(r0, r1);
   }
 }
@@ -138,7 +134,7 @@ export function compute_powers(point_row: any) {
  * @param {string} msg
  * @returns {string}
  */
-export function hello_wasm(msg: any) {
+export function hello_wasm(msg) {
   try {
     const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
     const ptr0 = passStringToWasm0(
@@ -153,12 +149,11 @@ export function hello_wasm(msg: any) {
     return getStringFromWasm0(r0, r1);
   } finally {
     wasm.__wbindgen_add_to_stack_pointer(16);
-    // @ts-ignore
     wasm.__wbindgen_free(r0, r1);
   }
 }
 
-function addHeapObject(obj: any) {
+function addHeapObject(obj) {
   if (heap_next === heap.length) heap.push(heap.length + 1);
   const idx = heap_next;
   heap_next = heap[idx];
@@ -167,7 +162,7 @@ function addHeapObject(obj: any) {
   return idx;
 }
 
-async function load(module: any, imports: any) {
+async function load(module, imports) {
   if (typeof Response === "function" && module instanceof Response) {
     if (typeof WebAssembly.instantiateStreaming === "function") {
       try {
@@ -198,13 +193,13 @@ async function load(module: any, imports: any) {
 }
 
 function getImports() {
-  const imports: any = {};
+  const imports = {};
   imports.wbg = {};
   imports.wbg.__wbg_new_abda76e883ba8a5f = function () {
     const ret = new Error();
     return addHeapObject(ret);
   };
-  imports.wbg.__wbg_stack_658279fe44541cf6 = function (arg0: any, arg1: any) {
+  imports.wbg.__wbg_stack_658279fe44541cf6 = function (arg0, arg1) {
     const ret = getObject(arg1).stack;
     const ptr0 = passStringToWasm0(
       ret,
@@ -215,30 +210,27 @@ function getImports() {
     getInt32Memory0()[arg0 / 4 + 1] = len0;
     getInt32Memory0()[arg0 / 4 + 0] = ptr0;
   };
-  imports.wbg.__wbg_error_f851667af71bcfc6 = function (arg0: any, arg1: any) {
+  imports.wbg.__wbg_error_f851667af71bcfc6 = function (arg0, arg1) {
     try {
       console.error(getStringFromWasm0(arg0, arg1));
     } finally {
       wasm.__wbindgen_free(arg0, arg1);
     }
   };
-  imports.wbg.__wbindgen_object_drop_ref = function (arg0: any) {
+  imports.wbg.__wbindgen_object_drop_ref = function (arg0) {
     takeObject(arg0);
   };
-  imports.wbg.__wbindgen_throw = function (arg0: any, arg1: any) {
+  imports.wbg.__wbindgen_throw = function (arg0, arg1) {
     throw new Error(getStringFromWasm0(arg0, arg1));
   };
 
   return imports;
 }
 
-// @ts-ignore
 function initMemory(imports, maybe_memory) {}
 
-// @ts-ignore
 function finalizeInit(instance, module) {
   wasm = instance.exports;
-  // @ts-ignore
   init.__wbindgen_wasm_module = module;
   cachedInt32Memory0 = new Int32Array();
   cachedUint8Memory0 = new Uint8Array();
@@ -246,10 +238,9 @@ function finalizeInit(instance, module) {
   return wasm;
 }
 
-function initSync(module: any) {
+function initSync(module) {
   const imports = getImports();
 
-  // @ts-ignore
   initMemory(imports);
 
   if (!(module instanceof WebAssembly.Module)) {
@@ -261,7 +252,7 @@ function initSync(module: any) {
   return finalizeInit(instance, module);
 }
 
-async function init(input: any) {
+async function init(input) {
   if (typeof input === "undefined") {
     input = new URL("getPreComputes.wasm", import.meta.url);
   }
@@ -275,7 +266,6 @@ async function init(input: any) {
     input = fetch(input);
   }
 
-  // @ts-ignore
   initMemory(imports);
 
   const { instance, module } = await load(await input, imports);

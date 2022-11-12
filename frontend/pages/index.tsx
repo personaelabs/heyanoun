@@ -82,6 +82,7 @@ const Home: NextPage = () => {
                           <ProposalRow key={prop.num} number={prop.num} />
                           <ProofComment
                             address={address}
+                            propId={prop.id}
                             propNumber={prop.num}
                           />
                         </div>
