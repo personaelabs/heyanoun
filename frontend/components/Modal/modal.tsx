@@ -1,7 +1,8 @@
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import { Dialog } from "@headlessui/react";
 import ReactMarkdown from "react-markdown";
 import styles from "./Modal.module.css";
+import CommentView from "../commentView";
 
 interface IModalProps {
   isOpen: boolean;
@@ -42,15 +43,15 @@ const Modal: React.FC<IModalProps> = ({ isOpen, handleClose }) => {
       {/* This is the actual modal and it's contents */}
       <div className="fixed inset-0 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center">
-          <Dialog.Panel className="w-full max-w-5xl bg-white">
-            <div>
+          <Dialog.Panel className="w-full max-w-5xl bg-white ">
+            <div className="">
               <div className="px-12 py-10">
                 <ReactMarkdown className={styles.markdown}>
                   {cleanedDescription}
                 </ReactMarkdown>
               </div>
-              <div className="bg-gray-50 border-t border-gray-200 p-6">
-                This is the comments section
+              <div className="bg-gray-50 border-t border-gray-200 py-8 pb-16 space-y-4">
+                <CommentView />
               </div>
             </div>
           </Dialog.Panel>

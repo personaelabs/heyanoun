@@ -12,8 +12,7 @@
 
 .markdown h3 {
   @apply my-5;
-  @apply text-2xl;
-  @apply font-semibold;
+  @apply text-xl;
 }
 
 .markdown h4 {
