@@ -25,20 +25,18 @@ const Home: NextPage = () => {
   const expandPropId = 168;
 
   const { address, connector, isConnected } = useAccount();
-  const { isLoading, error, data, refetch } = useQuery<PropTreesPayload>({
-    queryKey: [],
-    queryFn: () => getPropTrees(expandPropId),
+  const { isLoading, error, data, refetch } = useQuery<PropsPayload>({
+    queryKey: ["props"],
+    queryFn: getProps,
     retry: 1,
     enabled: address !== undefined,
     staleTime: 10000,
   });
 
-  const groups = useMemo(() => data?.groups, data?.groups);
-
-  // const propsReverseOrder = useMemo(
-  //   () => data?.props.slice(0).reverse(),
-  //   data?.props
-  // );
+  const propsReverseOrder = useMemo(
+    () => data?.props.slice(0).reverse(),
+    data?.props
+  );
 
   return (
     <div>
