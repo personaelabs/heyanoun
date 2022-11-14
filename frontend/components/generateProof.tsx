@@ -24,8 +24,8 @@ interface Props {
 
 interface SignaturePostProcessingContents {
   TPreComputes: PointPreComputes;
-  s: string;
-  U: string[][] | bigint[][];
+  s: bigint[];
+  U: bigint[][];
 }
 
 interface MerkleTreeProofData {
@@ -74,8 +74,11 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       const TPreComputes = await getPointPreComputes(T.encode("hex"));
       const signatureArtifacts: SignaturePostProcessingContents = {
         TPreComputes,
-        s: splitToRegisters(s.substring(2)),
-        U: [splitToRegisters(U.x), splitToRegisters(U.y)],
+        s: splitToRegisters(s.substring(2)) as bigint[],
+        U: [
+          splitToRegisters(U.x) as bigint[],
+          splitToRegisters(U.y) as bigint[],
+        ],
       };
       await generateProof(signatureArtifacts);
     },
