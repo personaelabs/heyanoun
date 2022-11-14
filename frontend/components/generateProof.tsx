@@ -117,30 +117,31 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
 
   const prepareProof = React.useCallback(async () => {
     try {
-      // const merkleTreeData = (
-      //   await axios.get("/api/getPropGroup", {
-      //     params: {
-      //       userAddr: address,
-      //       propId: propId,
-      //       groupId: groupId,
-      //     },
-      //   })
-      // ).data;
+      const merkleTreeData = (
+        await axios.get("/api/getPropGroup", {
+          params: {
+            userAddr: address,
+            propId: propId,
+            groupId: groupId,
+          },
+        })
+      ).data;
 
       // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
-      const { pathElements, pathIndices, pathRoot } = await createMerkleTree(
-        "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
-        [
-          "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
-          "0x199D5ED7F45F4eE35960cF22EAde2076e95B253F",
-        ]
-      );
+      //       if you want to test non-noun holding addresses
+      // const { pathElements, pathIndices, pathRoot } = await createMerkleTree(
+      //   "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
+      //   [
+      //     "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
+      //     "0x199D5ED7F45F4eE35960cF22EAde2076e95B253F",
+      //   ]
+      // );
 
-      const merkleTreeData = prepareMerkleRootProof(
-        pathElements,
-        pathIndices,
-        pathRoot
-      );
+      // const merkleTreeData = prepareMerkleRootProof(
+      //   pathElements,
+      //   pathIndices,
+      //   pathRoot
+      // );
 
       merkleTreeProofData.current = merkleTreeData;
 
