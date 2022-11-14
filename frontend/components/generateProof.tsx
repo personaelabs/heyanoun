@@ -11,6 +11,7 @@ import { PointPreComputes } from "../types/zk";
 import { prepareMerkleRootProof, splitToRegisters } from "../utils/utils";
 import { createMerkleTree } from "../utils/merkleTree";
 import { downloadZKey } from "../utils/zkp";
+import localforage from "localforage";
 const elliptic = require("elliptic");
 const ec = new elliptic.ec("secp256k1");
 
@@ -89,9 +90,19 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       await downloadZKey();
 
       const proofInputs = { ...artifacts, ...merkleTreeProofData.current };
+      const zkeyDb = await localforage.getItem("setMembership_final.zkey");
 
+      if (!zkeyDb) {
+        throw new Error("zkey was not found in the database");
+        return;
+      }
+
+      // @ts-ignore
+      const zkeyRawData = new Uint8Array(zkeyDb);
+
+      const zkeyFastFile = { type: "mem", data: zkeyRawData };
       const worker = new Worker("./worker.js");
-      worker.postMessage([proofInputs]);
+      worker.postMessage([proofInputs, zkeyFastFile]);
       worker.onmessage = async function (e) {
         const { proof, publicSignals } = e.data;
         console.log("PROOF SUCCESSFULLY GENERATED: ", proof, publicSignals);
@@ -106,15 +117,17 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
 
   const prepareProof = React.useCallback(async () => {
     try {
-      // const merkleTreeData = await axios.get("/api/getPropGroup", {
-      //   params: {
-      //     userAddr: address,
-      //     propId: propId,
-      //     groupId: groupId,
-      //   },
-      // });
+      // const merkleTreeData = (
+      //   await axios.get("/api/getPropGroup", {
+      //     params: {
+      //       userAddr: address,
+      //       propId: propId,
+      //       groupId: groupId,
+      //     },
+      //   })
+      // ).data;
 
-      // TODO: REMOVE THIS, generating dummy merkle tree to test proof generation works
+      // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
       const { pathElements, pathIndices, pathRoot } = await createMerkleTree(
         "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
         [
@@ -122,6 +135,7 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
           "0x199D5ED7F45F4eE35960cF22EAde2076e95B253F",
         ]
       );
+
       const merkleTreeData = prepareMerkleRootProof(
         pathElements,
         pathIndices,

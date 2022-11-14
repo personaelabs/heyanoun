@@ -1,5 +1,4 @@
 import localforage from "localforage";
-import { getPointPreComputes } from "./wasmPrecompute";
 
 const LOAD_URL = "https://d27ahxc61uj811.cloudfront.net/";
 const ZKEY_NAME = "setMembership_final.zkey";
@@ -10,6 +9,7 @@ async function downloadFromFilename(filename: string) {
     const zkeyResp = await fetch(link, {
       method: "GET",
     });
+    console.log("file contents: ", zkeyResp);
     const zkeyBuff = await zkeyResp.arrayBuffer();
     await localforage.setItem(filename, zkeyBuff);
     console.log(`Storage of ${filename} successful!`);

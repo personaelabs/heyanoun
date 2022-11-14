@@ -22,7 +22,7 @@ const privKey = BigInt(
   "0xf5b552f608f5b552f608f5b552f6082ff5b552f608f5b552f608f5b552f6082f"
 );
 
-const ZKEY_PATH = "build/setMembership/setMembership.zkey";
+const ZKEY_PATH = "build/setMembership/setMembership_final.zkey";
 const WASM_PATH = "build/setMembership/setMembership_js/setMembership.wasm";
 
 describe("test membership", () => {
@@ -147,6 +147,7 @@ describe("test membership", () => {
 
     console.log("Proving...");
     await groth16.fullProve(input, WASM_PATH, ZKEY_PATH);
+    console.log("Successfully generated proof");
 
     // if we get to here the circuit successfully passed the test
     expect(true).toBe(true);
