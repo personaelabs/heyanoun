@@ -12,6 +12,7 @@ import { prepareMerkleRootProof, splitToRegisters } from "../utils/utils";
 import { createMerkleTree } from "../utils/merkleTree";
 import { downloadZKey } from "../utils/zkp";
 import localforage from "localforage";
+import { GroupPayload } from "../types/api";
 const elliptic = require("elliptic");
 const ec = new elliptic.ec("secp256k1");
 
@@ -97,7 +98,6 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
 
       if (!zkeyDb) {
         throw new Error("zkey was not found in the database");
-        return;
       }
 
       // @ts-ignore
@@ -121,15 +121,17 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
   const prepareProof = React.useCallback(async () => {
     try {
       const merkleTreeData = (
-        await axios.get("/api/getPropGroup", {
+        await axios.get<GroupPayload>("/api/getPropGroup", {
           params: {
-            userAddr: address,
             propId: propId,
             groupId: groupId,
           },
         })
       ).data;
-
+      const leafData = merkleTreeData.leaves.find((el) => el.data === address);
+      if (!leafData) {
+        throw new Error("Could not find user address in selected group");
+      }
       // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
       //       if you want to test non-noun holding addresses
       // const { pathElements, pathIndices, pathRoot } = await createMerkleTree(
@@ -146,7 +148,11 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       //   pathRoot
       // );
 
-      merkleTreeProofData.current = merkleTreeData;
+      merkleTreeProofData.current = {
+        root: merkleTreeData.root,
+        pathElements: leafData.path,
+        pathIndices: leafData.indices,
+      };
 
       const groupMessage =
         groupId === 1
@@ -164,7 +170,7 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       // TODO: cleaner error handling
       throw ex;
     }
-  }, [commentMsg, groupId, propId, signMessage]);
+  }, [address, commentMsg, groupId, propId, signMessage]);
 
   return (
     <div className="flex flex-col justify-center items-center w-full">
