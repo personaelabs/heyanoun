@@ -2,6 +2,10 @@ import { NextApiRequest, NextApiResponse } from "next/types";
 import { ErrorResponse, PropGroupPayload } from "../../types/api";
 import { prisma } from "../../utils/prisma";
 
+function leafDataToAddress(data: string): string {
+  return "0x" + BigInt(data).toString(16).padStart(40, "0");
+}
+
 export default async function getPropGroup(
   req: NextApiRequest,
   res: NextApiResponse<PropGroupPayload | ErrorResponse>
@@ -28,7 +32,10 @@ export default async function getPropGroup(
           .status(404)
           .json({ err: `Could not fetch prop with id: ${propId}` });
       } else {
-        const leafData = prop.leaves.find((el) => el.data === userAddr);
+        const leafData = prop.leaves.find(
+          (el) =>
+            leafDataToAddress(el.data).toLowerCase() === userAddr.toLowerCase()
+        );
         if (!leafData) {
           res.status(404).json({
             err: `Address ${userAddr} does not exist in group ${groupId} and prop ${propId}`,
