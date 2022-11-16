@@ -2,7 +2,7 @@ import { Button } from "./button";
 import { Textarea } from "./textarea";
 import * as React from "react";
 import axios from "axios";
-import { useSignMessage } from "wagmi";
+import { useSignMessage, useSignTypedData } from "wagmi";
 import { ethers } from "ethers";
 import { SECP256K1_N } from "../utils/config";
 import BN from "bn.js";
@@ -30,10 +30,26 @@ interface SignaturePostProcessingContents {
 }
 
 interface MerkleTreeProofData {
+  groupId: number;
   root: string;
   pathElements: string[];
   pathIndices: string[];
 }
+
+// EIP-712 types for typed signature
+const domain = {
+  name: "heyanoun-prop-150",
+  version: "1",
+  chainId: 1,
+  verifyingContract: "0x0000000000000000000000000000000000000000",
+} as const;
+
+const types = {
+  NounSignature: [
+    { name: "groupId", type: "string" },
+    { name: "msgHash", type: "string" },
+  ],
+} as const;
 
 export const ProofComment = ({ address, propNumber, propId }: Props) => {
   const merkleTreeProofData = React.useRef<MerkleTreeProofData>();
@@ -45,10 +61,19 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
     boolean | undefined
   >(undefined);
 
-  const [groupId, setGroupId] = React.useState<number>(1);
+  // TODO: set from request
+  const [groupType, setgroupType] = React.useState<number>(1);
 
-  const { data, error, isLoading, signMessage } = useSignMessage({
-    async onSuccess(data, variables) {
+  const { data, error, isLoading, signTypedData } = useSignTypedData({
+    domain,
+    types,
+    value: {
+      groupId: `${
+        merkleTreeProofData.current ? merkleTreeProofData.current.groupId : -1
+      }`,
+      msgHash: ethers.utils.hashMessage(commentMsg),
+    } as const,
+    async onSuccess(data, _variables) {
       // Verify signature when sign message succeeds
       const { v, r, s } = ethers.utils.splitSignature(data);
       const isYOdd = (BigInt(v) - BigInt(27)) % BigInt(2);
@@ -61,9 +86,7 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
 
       // w = -(r^-1 * msg)
       const w = rInv
-        .mul(
-          new BN(ethers.utils.hashMessage(variables.message).substring(2), 16)
-        )
+        .mul(new BN(data.substring(2), 16))
         .neg()
         .umod(SECP256K1_N);
       // U = -(w * G) = -(r^-1 * msg * G)
@@ -124,7 +147,7 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
         await axios.get<GroupPayload>("/api/getPropGroup", {
           params: {
             propId: propId,
-            groupId: groupId,
+            groupType: groupType,
           },
         })
       ).data;
@@ -132,6 +155,14 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       if (!leafData) {
         throw new Error("Could not find user address in selected group");
       }
+
+      merkleTreeProofData.current = {
+        groupId: merkleTreeData.groupId,
+        root: merkleTreeData.root,
+        pathElements: leafData.path,
+        pathIndices: leafData.indices,
+      };
+
       // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
       //       if you want to test non-noun holding addresses
       // const { pathElements, pathIndices, pathRoot } = await createMerkleTree(
@@ -148,29 +179,20 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       //   pathRoot
       // );
 
-      merkleTreeProofData.current = {
-        root: merkleTreeData.root,
-        pathElements: leafData.path,
-        pathIndices: leafData.indices,
-      };
+      // merkleTreeProofData.current = {
+      //   root: merkleTreeData.root,
+      //   pathElements: merkleTreeData.pathElements,
+      //   pathIndices: merkleTreeData.pathIndices,
+      //   groupId: 123,
+      // };
 
-      const groupMessage =
-        groupId === 1
-          ? "I own one Noun"
-          : groupId === 2
-          ? "I own two or more Nouns"
-          : "I am a Nounder";
       // triggers callback which will call generateProof when it's done
-      signMessage({
-        message: `As of Prop ${propId}, I attest that ${groupMessage} and the hash (keccak) of the message I'm posting is ${ethers.utils.hashMessage(
-          commentMsg
-        )}`,
-      });
+      signTypedData();
     } catch (ex: unknown) {
       // TODO: cleaner error handling
       throw ex;
     }
-  }, [address, commentMsg, groupId, propId, signMessage]);
+  }, [address, groupType, propId, signTypedData]);
 
   return (
     <div className="flex flex-col justify-center items-center w-full">

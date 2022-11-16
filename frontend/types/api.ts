@@ -9,6 +9,7 @@ export interface ErrorResponse {
 }
 
 export interface GroupPayload {
+  groupId: number;
   root: string;
   leaves: Leaf[];
 }

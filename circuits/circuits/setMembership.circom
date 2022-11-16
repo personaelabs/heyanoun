@@ -9,6 +9,7 @@ template SetMembership(n, k, d) {
   assert(k <= 100);
 
   signal input root;
+  signal input groupId;
   signal input pathElements[d];
   signal input pathIndices[d];
 

@@ -8,17 +8,18 @@ export default async function getPropGroup(
 ) {
   try {
     const propId = `${req.query.propId}`;
-    const groupId = `${req.query.groupId}`;
-    if (!propId || !groupId) {
+    const groupType = `${req.query.groupType}`;
+    if (!propId || !groupType) {
       res.status(404).json({ err: "Missing prop ID or group ID" });
     } else {
       const group = await prisma.group.findFirst({
         where: {
-          typeId: parseInt(groupId),
+          typeId: parseInt(groupType),
           propId: parseInt(propId),
         },
         select: {
           leaves: true,
+          id: true,
           root: true,
         },
       });
@@ -27,7 +28,9 @@ export default async function getPropGroup(
           .status(404)
           .json({ err: `Could not fetch prop with id: ${propId}` });
       } else {
-        res.status(200).json({ root: group.root, leaves: group.leaves });
+        res
+          .status(200)
+          .json({ root: group.root, leaves: group.leaves, groupId: group.id });
       }
     }
   } catch (ex: unknown) {
