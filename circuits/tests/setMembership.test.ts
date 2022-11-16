@@ -143,7 +143,8 @@ describe("test membership", () => {
       TPreComputes,
       U: [Ux, Uy],
       s: s,
-      groupId: BigInt(0),
+      propId: BigInt(150),
+      groupType: BigInt(1),
       ...treeArtifacts,
     };
 
@@ -179,7 +180,8 @@ describe("test membership", () => {
       TPreComputes,
       U: [Ux, Uy],
       s: s,
-      groupId: BigInt(0),
+      propId: BigInt(150),
+      groupType: BigInt(1),
       ...treeArtifacts,
     };
     await expect(

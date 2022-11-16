@@ -46,7 +46,8 @@ const domain = {
 
 const types = {
   NounSignature: [
-    { name: "groupId", type: "string" },
+    { name: "propId", type: "string" },
+    { name: "groupType", type: "string" },
     { name: "msgHash", type: "string" },
   ],
 } as const;
@@ -68,9 +69,8 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
     domain,
     types,
     value: {
-      groupId: `${
-        merkleTreeProofData.current ? merkleTreeProofData.current.groupId : -1
-      }`,
+      propId: `${propId}`,
+      groupType: `${groupType}`,
       msgHash: ethers.utils.hashMessage(commentMsg),
     } as const,
     async onSuccess(data, _variables) {
