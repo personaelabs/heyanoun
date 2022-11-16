@@ -85,7 +85,7 @@ export default async function submit(
   const publicSignals: string[] = body.publicSignals;
 
   // TODO: vkey should be static/local
-  const vkey = {};
+  const vkey = "";
 
   const r = body.r;
   const isRYOdd = body.isRYOdd;
