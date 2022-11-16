@@ -57,4 +57,4 @@ template SetMembership(n, k, d) {
 
 }
 
-component main { public [root, TPreComputes, U] } = SetMembership(64, 4, 30);
+component main { public [root, groupId, TPreComputes, U] } = SetMembership(64, 4, 30);
