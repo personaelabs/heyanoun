@@ -8,15 +8,23 @@ import { getPointPreComputes } from "../../utils/wasmPrecompute";
 import { prisma } from "../../utils/prisma";
 
 const elliptic = require("elliptic");
-
-// NOTE: from generateProof.ts
-interface SignaturePostProcessingContents {
-  TPreComputes: PointPreComputes;
-  // s: bigint[]; (private signal)
-  U: bigint[][];
-}
+const snarkjs = require("snarkjs");
 
 const ec = new elliptic.ec("secp256k1");
+
+export async function verifyProof(
+  publicSignals: string[],
+  proof: any,
+  vkey: string
+) {
+  const proofVerified = await snarkjs.groth16.verify(
+    JSON.parse(vkey),
+    publicSignals,
+    proof
+  );
+
+  return proofVerified;
+}
 
 // NOTE: this code is duplicated with that in generateProof.tsx and should be extracted out
 async function verifySignatureArtifacts(
@@ -59,7 +67,7 @@ function verifyGroupMatchesRoot(
   publicSignals: string[],
   groupId: number
 ): boolean {
-  // TODO: get root from publicSignals
+  // TODO: get root from publicSignals, match with group in db
   return false;
 }
 
@@ -75,6 +83,9 @@ export default async function submit(
 
   const proof = body.proof;
   const publicSignals: string[] = body.publicSignals;
+
+  // TODO: vkey should be static/local
+  const vkey = {};
 
   const r = body.r;
   const isRYOdd = body.isRYOdd;
@@ -100,9 +111,13 @@ export default async function submit(
     return;
   }
 
+  if (!verifyProof(publicSignals, proof, vkey)) {
+    res.status(400).send("proof verification failed!");
+    return;
+  }
   // TODO: handle posting
   // 1. post in db
-  // 2. twitter (and other consumer) pass along
+  // 2. twitter (and other consumers) pass along
 
   // TODO: potentially link tweet URL, ipfs hash, etc. in json
   res.status(200).json({ success: true });

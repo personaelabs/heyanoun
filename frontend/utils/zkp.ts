@@ -1,7 +1,5 @@
 import localforage from "localforage";
 
-const snarkjs = require("snarkjs");
-
 const LOAD_URL = "https://d27ahxc61uj811.cloudfront.net/";
 const ZKEY_NAME = "setMembership_final.zkey";
 
@@ -33,17 +31,3 @@ export const downloadProofFiles = async function (filename: string) {
 export const downloadZKey = async () => {
   await downloadProofFiles(ZKEY_NAME);
 };
-
-export async function verifyProof(
-  proof: any,
-  publicSignals: any,
-  proofType: any
-) {
-  const proofVerified = await snarkjs.groth16.verify(
-    JSON.parse(proofType.vkey),
-    publicSignals,
-    proof
-  );
-
-  return proofVerified;
-}
