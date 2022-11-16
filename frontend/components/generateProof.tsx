@@ -4,16 +4,13 @@ import * as React from "react";
 import axios from "axios";
 import { useSignMessage } from "wagmi";
 import { ethers } from "ethers";
-import { SECP256K1_N } from "../utils/config";
-import BN from "bn.js";
-import { getPointPreComputes } from "../utils/wasmPrecompute";
+
+import { getSigPublicSignals } from "../utils/wasmPrecompute";
 import { PointPreComputes } from "../types/zk";
 import { prepareMerkleRootProof, splitToRegisters } from "../utils/utils";
 import { createMerkleTree } from "../utils/merkleTree";
 import { downloadZKey } from "../utils/zkp";
 import localforage from "localforage";
-const elliptic = require("elliptic");
-const ec = new elliptic.ec("secp256k1");
 
 interface Props {
   address: string;
@@ -22,6 +19,7 @@ interface Props {
   propId: number;
 }
 
+// TODO: change this to have the piece used for verification and the piece used for proving
 interface SignaturePostProcessingContents {
   TPreComputes: PointPreComputes;
   s: bigint[];
@@ -50,35 +48,18 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
     async onSuccess(data, variables) {
       // Verify signature when sign message succeeds
       const { v, r, s } = ethers.utils.splitSignature(data);
-      const isYOdd = (BigInt(v) - BigInt(27)) % BigInt(2);
-      const rPoint = ec.keyFromPublic(
-        ec.curve.pointFromX(new BN(r.substring(2), 16), isYOdd).encode("hex"),
-        "hex"
+      const isRYOdd = (BigInt(v) - BigInt(27)) % BigInt(2);
+
+      const { TPreComputes, U } = await getSigPublicSignals(
+        r,
+        isRYOdd,
+        variables.message
       );
-      // Get the group element: -(m * r^−1 * G)
-      const rInv = new BN(r.substring(2), 16).invm(SECP256K1_N);
 
-      // w = -(r^-1 * msg)
-      const w = rInv
-        .mul(
-          new BN(ethers.utils.hashMessage(variables.message).substring(2), 16)
-        )
-        .neg()
-        .umod(SECP256K1_N);
-      // U = -(w * G) = -(r^-1 * msg * G)
-      const U = ec.curve.g.mul(w);
-
-      // T = r^-1 * R
-      const T = rPoint.getPublic().mul(rInv);
-
-      const TPreComputes = await getPointPreComputes(T.encode("hex"));
       const signatureArtifacts: SignaturePostProcessingContents = {
         TPreComputes,
+        U,
         s: splitToRegisters(s.substring(2)) as bigint[],
-        U: [
-          splitToRegisters(U.x) as bigint[],
-          splitToRegisters(U.y) as bigint[],
-        ],
       };
       await generateProof(signatureArtifacts);
     },
