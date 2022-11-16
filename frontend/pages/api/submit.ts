@@ -20,11 +20,10 @@ const ec = new elliptic.ec("secp256k1");
 
 // NOTE: this code is duplicated with that in generateProof.tsx and should be extracted out
 async function verifySignatureArtifacts(
+  publicSignals: string[],
   r: string,
   isRYOdd: boolean,
-  msg: string,
-  TPreComputes: PointPreComputes,
-  U: bigint[][]
+  msg: string
 ): Promise<boolean> {
   const rPoint = ec.keyFromPublic(
     ec.curve.pointFromX(new BN(r.substring(2), 16), isRYOdd).encode("hex"),
@@ -41,16 +40,16 @@ async function verifySignatureArtifacts(
     .umod(SECP256K1_N);
 
   // U = -(w * G) = -(r^-1 * msg * G)
-  const expectedU = ec.curve.g.mul(w);
+  const U = ec.curve.g.mul(w);
 
   // T = r^-1 * R
   const T = rPoint.getPublic().mul(rInv);
 
-  const expectedPreComputes = await getPointPreComputes(T.encode("hex"));
+  const TPreComputes = await getPointPreComputes(T.encode("hex"));
 
-  // TODO: compare epxected with TPreComputes
+  // TODO: compare epxected with TPreComputes in publicSignals (need to deserialize from strings)
 
-  // TODO: compare expectedU with U
+  // TODO: compare expectedU with U in publicSignals (need to deserialize from strings)
   // U: [splitToRegisters(U.x) as bigint[], splitToRegisters(U.y) as bigint[]];
 
   return false;
@@ -81,10 +80,6 @@ export default async function submit(
   const isRYOdd = body.isRYOdd;
   const msg = body.msg;
 
-  // TODO: how to extract these properly?
-  const TPreComputes = body.TPreComputes;
-  const U = body.U;
-
   const groupId: number = body.groupId; // NOTE: may also be stored w/publicSignals in future
   const group = await prisma.group.findUnique({
     where: { id: groupId },
@@ -100,15 +95,7 @@ export default async function submit(
     return;
   }
 
-  if (
-    !verifySignatureArtifacts(
-      r,
-      isRYOdd,
-      msg,
-      TPreComputes as PointPreComputes,
-      U as bigint[][]
-    )
-  ) {
+  if (!verifySignatureArtifacts(publicSignals, r, isRYOdd, msg)) {
     res.status(400).send("signature artifact verification failed!");
     return;
   }
