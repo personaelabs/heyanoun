@@ -6,6 +6,7 @@ import { SECP256K1_N } from "../../utils/config";
 import {
   getSigPublicSignals,
   getPointPreComputes,
+  PublicSignatureData,
 } from "../../utils/wasmPrecompute";
 
 import { prisma } from "../../utils/prisma";
@@ -32,9 +33,7 @@ export async function verifyProof(
 // TODO: unit test?
 async function verifySignature(
   publicSignals: string[],
-  r: string,
-  isRYOdd: bigint,
-  msg: string
+  { r, isRYOdd, msg }: PublicSignatureData
 ): Promise<boolean> {
   const { TPreComputes, U } = await getSigPublicSignals({ r, isRYOdd, msg });
 
@@ -62,40 +61,43 @@ export default async function submit(
   }
   console.log(`Received request: ${JSON.stringify(body)}`);
 
-  const proof = body.proof;
-  const publicSignals: string[] = body.publicSignals;
+  // const proof = body.proof;
+  // const publicSignals: string[] = body.publicSignals;
 
-  // TODO: vkey should be static/local
-  const vkey = "";
+  // console.log("public signals:");
+  // console.log(publicSignals);
 
-  const r = body.r;
-  const isRYOdd = body.isRYOdd;
-  const msg = body.msg;
+  // // TODO: vkey should be static/local
+  // const vkey = "";
 
-  const groupId: number = body.groupId; // NOTE: may also be stored w/publicSignals in future
-  const group = await prisma.group.findUnique({
-    where: { id: groupId },
-  });
+  const publicSignatureData: PublicSignatureData = body.publicSignatureData;
 
-  if (!group) {
-    res.status(404).send("group not found!");
-    return;
-  }
+  // NOTE: this should be propId + groupType in the future
+  // const groupId: number = body.groupId; // NOTE: may also be stored w/publicSignals in future
+  // const group = await prisma.group.findUnique({
+  //   where: { id: groupId },
+  // });
+  // if (!group) {
+  //   res.status(404).send("group not found!");
+  //   return;
+  // }
 
-  if (!verifyGroupMatchesRoot(publicSignals, groupId)) {
-    res.status(400).send("merkle root does not match group specified!");
-    return;
-  }
+  // if (!verifyGroupMatchesRoot(publicSignals, groupId)) {
+  //   res.status(400).send("merkle root does not match group specified!");
+  //   return;
+  // }
 
-  if (!verifySignatureArtifacts(publicSignals, r, isRYOdd, msg)) {
-    res.status(400).send("signature artifact verification failed!");
-    return;
-  }
+  // TODO: put this back in
+  // if (!verifySignature(publicSignals, publicSignatureData)) {
+  //   res.status(400).send("signature artifact verification failed!");
+  //   return;
+  // }
 
-  if (!verifyProof(publicSignals, proof, vkey)) {
-    res.status(400).send("proof verification failed!");
-    return;
-  }
+  // if (!verifyProof(publicSignals, proof, vkey)) {
+  //   res.status(400).send("proof verification failed!");
+  //   return;
+  // }
+
   // TODO: handle posting
   // 1. post in db
   // 2. twitter (and other consumers) pass along
