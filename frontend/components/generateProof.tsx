@@ -103,7 +103,15 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       //TODO: add loading state or progress bar first time it downloads zkey
       await downloadZKey();
 
-      const proofInputs = { ...artifacts, ...merkleTreeProofData.current };
+      const proofInputs = {
+        ...artifacts,
+        root: merkleTreeProofData.current.root,
+        pathIndices: merkleTreeProofData.current.pathIndices,
+        pathElements: merkleTreeProofData.current.pathElements,
+        propId,
+        groupType,
+      };
+      console.log(proofInputs);
       const zkeyDb = await localforage.getItem("setMembership_final.zkey");
 
       if (!zkeyDb) {
