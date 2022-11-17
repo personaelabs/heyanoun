@@ -3,9 +3,13 @@ import { useState } from "react";
 import { useAccount, useSignTypedData } from "wagmi";
 import { PointPreComputes } from "../types/zk";
 import {
+  DOMAIN,
+  TYPES,
+  eip712MsgHash,
   JSONStringifyCustom,
   prepareMerkleRootProof,
   splitToRegisters,
+  EIP712Value,
 } from "../utils/utils";
 import AnonPill, { NounSet } from "./anonPill";
 import { ethers } from "ethers";
@@ -38,7 +42,6 @@ interface MerkleTreeProofData {
   pathIndices: string[];
 }
 
-// EIP-712 types for typed signature
 const domain = {
   name: "heyanoun-prop-150",
   version: "1",
@@ -78,8 +81,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       groupType: `${activeNounSet}`,
       msgHash: ethers.utils.keccak256(toUtf8Bytes(commentMsg)),
     } as const,
-    async onSuccess(data, _variables) {
-      console.log(data, _variables);
+    async onSuccess(data, variables) {
       // Verify signature when sign message succeeds
       const { v, r, s } = ethers.utils.splitSignature(data);
       const isYOdd = (BigInt(v) - BigInt(27)) % BigInt(2);
@@ -92,7 +94,9 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
 
       // w = -(r^-1 * msg)
       const w = rInv
-        .mul(new BN(data.substring(2), 16))
+        .mul(
+          new BN(eip712MsgHash(variables.value as EIP712Value).substring(2), 16)
+        )
         .neg()
         .umod(SECP256K1_N);
       // U = -(w * G) = -(r^-1 * msg * G)
@@ -128,8 +132,6 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
         propId: propId.toString(),
         groupType: activeNounSet.toString(),
       };
-
-      console.log(JSONStringifyCustom(proofInputs));
 
       const zkeyDb = await localforage.getItem("setMembership_final.zkey");
 

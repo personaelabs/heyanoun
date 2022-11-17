@@ -8,7 +8,12 @@ import { SECP256K1_N } from "../utils/config";
 import BN from "bn.js";
 import { getPointPreComputes } from "../utils/wasmPrecompute";
 import { PointPreComputes } from "../types/zk";
-import { prepareMerkleRootProof, splitToRegisters } from "../utils/utils";
+import {
+  eip712MsgHash,
+  EIP712Value,
+  prepareMerkleRootProof,
+  splitToRegisters,
+} from "../utils/utils";
 import { createMerkleTree } from "../utils/merkleTree";
 import { downloadZKey } from "../utils/zkp";
 import localforage from "localforage";
@@ -73,7 +78,7 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       groupType: `${groupType}`,
       msgHash: ethers.utils.hashMessage(commentMsg),
     } as const,
-    async onSuccess(data, _variables) {
+    async onSuccess(data, variables) {
       // Verify signature when sign message succeeds
       const { v, r, s } = ethers.utils.splitSignature(data);
       const isYOdd = (BigInt(v) - BigInt(27)) % BigInt(2);
@@ -86,7 +91,9 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
 
       // w = -(r^-1 * msg)
       const w = rInv
-        .mul(new BN(data.substring(2), 16))
+        .mul(
+          new BN(eip712MsgHash(variables.value as EIP712Value).substring(2), 16)
+        )
         .neg()
         .umod(SECP256K1_N);
       // U = -(w * G) = -(r^-1 * msg * G)
