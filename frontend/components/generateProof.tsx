@@ -7,7 +7,11 @@ import { ethers } from "ethers";
 
 import { getSigPublicSignals } from "../utils/wasmPrecompute";
 import { PointPreComputes } from "../types/zk";
-import { prepareMerkleRootProof, splitToRegisters } from "../utils/utils";
+import {
+  leafDataToAddress,
+  prepareMerkleRootProof,
+  splitToRegisters,
+} from "../utils/utils";
 import { createMerkleTree } from "../utils/merkleTree";
 import { downloadZKey } from "../utils/zkp";
 import localforage from "localforage";
@@ -115,6 +119,7 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       worker.onmessage = async function (e) {
         const { proof, publicSignals } = e.data;
         console.log("PROOF SUCCESSFULLY GENERATED: ", proof, publicSignals);
+
         // TODO: post to IPFS or store in our db
         setSuccessProofGen(true);
         // TODO: add toast showing success
@@ -134,7 +139,10 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
           },
         })
       ).data;
-      const leafData = merkleTreeData.leaves.find((el) => el.data === address);
+      const leafData = merkleTreeData.leaves.find(
+        (el) =>
+          leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
+      );
       if (!leafData) {
         throw new Error("Could not find user address in selected group");
       }

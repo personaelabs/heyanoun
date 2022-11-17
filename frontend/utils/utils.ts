@@ -49,3 +49,7 @@ export function JSONStringifyCustom(val: any) {
     (key, value) => (typeof value === "bigint" ? value.toString() : value) // return everything else unchanged
   );
 }
+
+export function leafDataToAddress(data: string): string {
+  return "0x" + BigInt(data).toString(16).padStart(40, "0");
+}
