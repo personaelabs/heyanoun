@@ -159,46 +159,46 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
 
   const prepareProof = React.useCallback(async () => {
     try {
-      // const merkleTreeData = (
-      //   await axios.get<GroupPayload>("/api/getPropGroup", {
-      //     params: {
-      //       propId: propId,
-      //       groupType: activeNounSet,
-      //     },
-      //   })
-      // ).data;
-      // const leafData = merkleTreeData.leaves.find((el) => el.data === address);
-      // if (!leafData) {
-      //   throw new Error("Could not find user address in selected group");
-      // }
-
-      // merkleTreeProofData.current = {
-      //   root: merkleTreeData.root,
-      //   pathElements: leafData.path,
-      //   pathIndices: leafData.indices,
-      // };
-
-      // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
-      //       if you want to test non-noun holding addresses
-      const { pathElements, pathIndices, pathRoot } = await createMerkleTree(
-        "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
-        [
-          "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
-          "0x199D5ED7F45F4eE35960cF22EAde2076e95B253F",
-        ]
-      );
-
-      const merkleTreeData = prepareMerkleRootProof(
-        pathElements,
-        pathIndices,
-        pathRoot
-      );
+      const merkleTreeData = (
+        await axios.get<GroupPayload>("/api/getPropGroup", {
+          params: {
+            propId: propId,
+            groupType: activeNounSet,
+          },
+        })
+      ).data;
+      const leafData = merkleTreeData.leaves.find((el) => el.data === address);
+      if (!leafData) {
+        throw new Error("Could not find user address in selected group");
+      }
 
       merkleTreeProofData.current = {
         root: merkleTreeData.root,
-        pathElements: merkleTreeData.pathElements,
-        pathIndices: merkleTreeData.pathIndices,
+        pathElements: leafData.path,
+        pathIndices: leafData.indices,
       };
+
+      // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
+      //       if you want to test non-noun holding addresses
+      // const { pathElements, pathIndices, pathRoot } = await createMerkleTree(
+      //   "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
+      //   [
+      //     "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
+      //     "0x199D5ED7F45F4eE35960cF22EAde2076e95B253F",
+      //   ]
+      // );
+
+      // const merkleTreeData = prepareMerkleRootProof(
+      //   pathElements,
+      //   pathIndices,
+      //   pathRoot
+      // );
+
+      // merkleTreeProofData.current = {
+      //   root: merkleTreeData.root,
+      //   pathElements: merkleTreeData.pathElements,
+      //   pathIndices: merkleTreeData.pathIndices,
+      // };
 
       // triggers callback which will call generateProof when it's done
       signTypedData();

@@ -35,7 +35,6 @@ interface SignaturePostProcessingContents {
 }
 
 interface MerkleTreeProofData {
-  groupId: number;
   root: string;
   pathElements: string[];
   pathIndices: string[];
@@ -164,7 +163,6 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       }
 
       merkleTreeProofData.current = {
-        groupId: merkleTreeData.groupId,
         root: merkleTreeData.root,
         pathElements: leafData.path,
         pathIndices: leafData.indices,
@@ -190,7 +188,6 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       //   root: merkleTreeData.root,
       //   pathElements: merkleTreeData.pathElements,
       //   pathIndices: merkleTreeData.pathIndices,
-      //   groupId: 123,
       // };
 
       // triggers callback which will call generateProof when it's done
