@@ -65,16 +65,15 @@ export default async function submit(
   }
   console.log(`Received request: ${JSON.stringify(body)}`);
 
-  // const proof = body.proof;
-  // const publicSignals: string[] = body.publicSignals;
+  const proof = body.proof;
+  const publicSignals: string[] = body.publicSignals;
+  const publicSignatureData: PublicSignatureData = body.publicSignatureData;
 
   // console.log("public signals:");
   // console.log(publicSignals);
 
   // // TODO: vkey should be static/local
   // const vkey = "";
-
-  const publicSignatureData: PublicSignatureData = body.publicSignatureData;
 
   // NOTE: this should be propId + groupType in the future
   // const groupId: number = body.groupId; // NOTE: may also be stored w/publicSignals in future
