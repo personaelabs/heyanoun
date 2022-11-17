@@ -1,5 +1,6 @@
 import BN from "bn.js";
 import { ethers } from "ethers";
+import { PublicSignatureData } from "../components/generateProof";
 import { PointPreComputes } from "../types/zk";
 import { SECP256K1_N } from "./config";
 import { splitToRegisters } from "./utils";
@@ -27,11 +28,11 @@ export const getPointPreComputes = async (
   return preComputes;
 };
 
-export async function getSigPublicSignals(
-  r: string,
-  isRYOdd: bigint,
-  msg: string | Uint8Array
-) {
+export async function getSigPublicSignals({
+  r,
+  isRYOdd,
+  msg,
+}: PublicSignatureData) {
   const rPoint = ec.keyFromPublic(
     ec.curve.pointFromX(new BN(r.substring(2), 16), isRYOdd).encode("hex"),
     "hex"

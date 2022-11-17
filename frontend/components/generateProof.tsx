@@ -33,6 +33,13 @@ interface MerkleTreeProofData {
   pathIndices: string[];
 }
 
+// NOTE: data from which signature public signals are generated
+export interface PublicSignatureData {
+  r: string;
+  isRYOdd: bigint;
+  msg: string | Uint8Array;
+}
+
 // EIP-712 types for typed signature
 const domain = {
   name: "heyanoun-prop-150",
@@ -75,11 +82,11 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       const { v, r, s } = ethers.utils.splitSignature(data);
       const isRYOdd = (BigInt(v) - BigInt(27)) % BigInt(2);
 
-      const { TPreComputes, U } = await getSigPublicSignals(
+      const { TPreComputes, U } = await getSigPublicSignals({
         r,
         isRYOdd,
-        variables.message
-      );
+        msg: variables.message,
+      });
 
       const signatureArtifacts: SignaturePostProcessingContents = {
         TPreComputes,

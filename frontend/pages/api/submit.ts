@@ -29,13 +29,14 @@ export async function verifyProof(
   return proofVerified;
 }
 
-async function verifySignatureArtifacts(
+// TODO: unit test?
+async function verifySignature(
   publicSignals: string[],
   r: string,
   isRYOdd: bigint,
   msg: string
 ): Promise<boolean> {
-  const { TPreComputes, U } = await getSigPublicSignals(r, isRYOdd, msg);
+  const { TPreComputes, U } = await getSigPublicSignals({ r, isRYOdd, msg });
 
   // TODO: compare epxected with TPreComputes in publicSignals (need to deserialize from strings)
   // TODO: compare expectedU with U in publicSignals (need to deserialize from strings)
