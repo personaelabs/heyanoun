@@ -33,9 +33,13 @@ export async function verifyProof(
 // TODO: unit test?
 async function verifySignature(
   publicSignals: string[],
-  { r, isRYOdd, msg }: PublicSignatureData
+  { r, isRYOdd, msgHash }: PublicSignatureData
 ): Promise<boolean> {
-  const { TPreComputes, U } = await getSigPublicSignals({ r, isRYOdd, msg });
+  const { TPreComputes, U } = await getSigPublicSignals({
+    r,
+    isRYOdd,
+    msgHash,
+  });
 
   // TODO: compare epxected with TPreComputes in publicSignals (need to deserialize from strings)
   // TODO: compare expectedU with U in publicSignals (need to deserialize from strings)

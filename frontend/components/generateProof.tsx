@@ -11,6 +11,7 @@ import { prepareMerkleRootProof, splitToRegisters } from "../utils/utils";
 import { createMerkleTree } from "../utils/merkleTree";
 import { downloadZKey } from "../utils/zkp";
 import localforage from "localforage";
+import { GroupPayload } from "../types/api";
 
 interface Props {
   address: string;
@@ -31,13 +32,6 @@ interface MerkleTreeProofData {
   root: string;
   pathElements: string[];
   pathIndices: string[];
-}
-
-// NOTE: data from which signature public signals are generated
-export interface PublicSignatureData {
-  r: string;
-  isRYOdd: bigint;
-  msg: string | Uint8Array;
 }
 
 // EIP-712 types for typed signature
@@ -80,12 +74,12 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
     async onSuccess(data, _variables) {
       // Verify signature when sign message succeeds
       const { v, r, s } = ethers.utils.splitSignature(data);
-      const isRYOdd = (BigInt(v) - BigInt(27)) % BigInt(2);
+      const isRYOdd = Number((BigInt(v) - BigInt(27)) % BigInt(2));
 
       const { TPreComputes, U } = await getSigPublicSignals({
         r,
         isRYOdd,
-        msg: variables.message,
+        msgHash: data,
       });
 
       const signatureArtifacts: SignaturePostProcessingContents = {

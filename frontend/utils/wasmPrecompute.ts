@@ -31,13 +31,13 @@ export const getPointPreComputes = async (
 export interface PublicSignatureData {
   r: string;
   isRYOdd: number;
-  msg: string | Uint8Array;
+  msgHash: string;
 }
 
 export async function getSigPublicSignals({
   r,
   isRYOdd,
-  msg,
+  msgHash,
 }: PublicSignatureData) {
   const rPoint = ec.keyFromPublic(
     ec.curve.pointFromX(new BN(r.substring(2), 16), isRYOdd).encode("hex"),
@@ -48,7 +48,7 @@ export async function getSigPublicSignals({
 
   // w = -(r^-1 * msg)
   const w = rInv
-    .mul(new BN(ethers.utils.hashMessage(msg).substring(2), 16))
+    .mul(new BN(msgHash.substring(2), 16))
     .neg()
     .umod(SECP256K1_N);
   // U = -(w * G) = -(r^-1 * msg * G)
