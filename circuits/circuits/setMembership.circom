@@ -9,6 +9,8 @@ template SetMembership(n, k, d) {
   assert(k <= 100);
 
   signal input root;
+  signal input propId;
+  signal input groupType;
   signal input pathElements[d];
   signal input pathIndices[d];
 
@@ -56,4 +58,4 @@ template SetMembership(n, k, d) {
 
 }
 
-component main { public [root, TPreComputes, U] } = SetMembership(64, 4, 30);
+component main { public [root, propId, groupType, TPreComputes, U] } = SetMembership(64, 4, 30);

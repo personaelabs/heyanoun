@@ -1,4 +1,4 @@
-import { Prop } from "@prisma/client";
+import { Leaf, Prop } from "@prisma/client";
 
 export interface PropsPayload {
   props: Prop[];
@@ -8,8 +8,8 @@ export interface ErrorResponse {
   err: string;
 }
 
-export interface PropGroupPayload {
+export interface GroupPayload {
+  groupId: number;
   root: string;
-  pathElements: string[];
-  pathIndices: string[];
+  leaves: Leaf[];
 }

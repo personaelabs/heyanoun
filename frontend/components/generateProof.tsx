@@ -2,7 +2,7 @@ import { Button } from "./button";
 import { Textarea } from "./textarea";
 import * as React from "react";
 import axios from "axios";
-import { useSignMessage } from "wagmi";
+import { useSignMessage, useSignTypedData } from "wagmi";
 import { ethers } from "ethers";
 
 import { getSigPublicSignals } from "../utils/wasmPrecompute";
@@ -27,10 +27,27 @@ interface SignaturePostProcessingContents {
 }
 
 interface MerkleTreeProofData {
+  groupId: number;
   root: string;
   pathElements: string[];
   pathIndices: string[];
 }
+
+// EIP-712 types for typed signature
+const domain = {
+  name: "heyanoun-prop-150",
+  version: "1",
+  chainId: 1,
+  verifyingContract: "0x0000000000000000000000000000000000000000",
+} as const;
+
+const types = {
+  NounSignature: [
+    { name: "propId", type: "string" },
+    { name: "groupType", type: "string" },
+    { name: "msgHash", type: "string" },
+  ],
+} as const;
 
 export const ProofComment = ({ address, propNumber, propId }: Props) => {
   const merkleTreeProofData = React.useRef<MerkleTreeProofData>();
@@ -42,10 +59,18 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
     boolean | undefined
   >(undefined);
 
-  const [groupId, setGroupId] = React.useState<number>(1);
+  // TODO: set from request
+  const [groupType, setgroupType] = React.useState<number>(1);
 
-  const { data, error, isLoading, signMessage } = useSignMessage({
-    async onSuccess(data, variables) {
+  const { data, error, isLoading, signTypedData } = useSignTypedData({
+    domain,
+    types,
+    value: {
+      propId: `${propId}`,
+      groupType: `${groupType}`,
+      msgHash: ethers.utils.hashMessage(commentMsg),
+    } as const,
+    async onSuccess(data, _variables) {
       // Verify signature when sign message succeeds
       const { v, r, s } = ethers.utils.splitSignature(data);
       const isRYOdd = (BigInt(v) - BigInt(27)) % BigInt(2);
@@ -78,7 +103,6 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
 
       if (!zkeyDb) {
         throw new Error("zkey was not found in the database");
-        return;
       }
 
       // @ts-ignore
@@ -102,14 +126,24 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
   const prepareProof = React.useCallback(async () => {
     try {
       const merkleTreeData = (
-        await axios.get("/api/getPropGroup", {
+        await axios.get<GroupPayload>("/api/getPropGroup", {
           params: {
-            userAddr: address,
             propId: propId,
-            groupId: groupId,
+            groupType: groupType,
           },
         })
       ).data;
+      const leafData = merkleTreeData.leaves.find((el) => el.data === address);
+      if (!leafData) {
+        throw new Error("Could not find user address in selected group");
+      }
+
+      merkleTreeProofData.current = {
+        groupId: merkleTreeData.groupId,
+        root: merkleTreeData.root,
+        pathElements: leafData.path,
+        pathIndices: leafData.indices,
+      };
 
       // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
       //       if you want to test non-noun holding addresses
@@ -127,25 +161,20 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       //   pathRoot
       // );
 
-      merkleTreeProofData.current = merkleTreeData;
+      // merkleTreeProofData.current = {
+      //   root: merkleTreeData.root,
+      //   pathElements: merkleTreeData.pathElements,
+      //   pathIndices: merkleTreeData.pathIndices,
+      //   groupId: 123,
+      // };
 
-      const groupMessage =
-        groupId === 1
-          ? "I own one Noun"
-          : groupId === 2
-          ? "I own two or more Nouns"
-          : "I am a Nounder";
       // triggers callback which will call generateProof when it's done
-      signMessage({
-        message: `As of Prop ${propId}, I attest that ${groupMessage} and the hash (keccak) of the message I'm posting is ${ethers.utils.hashMessage(
-          commentMsg
-        )}`,
-      });
+      signTypedData();
     } catch (ex: unknown) {
       // TODO: cleaner error handling
       throw ex;
     }
-  }, [commentMsg, groupId, propId, signMessage]);
+  }, [address, groupType, propId, signTypedData]);
 
   return (
     <div className="flex flex-col justify-center items-center w-full">

@@ -93,13 +93,14 @@ describe("test membership", () => {
     const T = rPoint.getPublic().mul(rInv);
 
     // re-write our signature and curve points
-    const signatureData: Record<string, string | string[] | bigint[]> = {
-      v: v.toString(),
-      r: splitToRegisters(r.toString("hex")),
-      s: splitToRegisters(s.toString("hex")),
-      Ux: splitToRegisters(U.x),
-      Uy: splitToRegisters(U.y),
-    };
+    const signatureData: Record<string, bigint | string | string[] | bigint[]> =
+      {
+        v: v.toString(),
+        r: splitToRegisters(r.toString("hex")),
+        s: splitToRegisters(s.toString("hex")),
+        Ux: splitToRegisters(U.x),
+        Uy: splitToRegisters(U.y),
+      };
 
     Ux = signatureData.Ux;
     Uy = signatureData.Uy;
@@ -142,6 +143,8 @@ describe("test membership", () => {
       TPreComputes,
       U: [Ux, Uy],
       s: s,
+      propId: BigInt(150),
+      groupType: BigInt(1),
       ...treeArtifacts,
     };
 
@@ -177,6 +180,8 @@ describe("test membership", () => {
       TPreComputes,
       U: [Ux, Uy],
       s: s,
+      propId: BigInt(150),
+      groupType: BigInt(1),
       ...treeArtifacts,
     };
     await expect(

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
-import { ErrorResponse, PropGroupPayload } from "../../types/api";
+import { ErrorResponse, GroupPayload } from "../../types/api";
 import { prisma } from "../../utils/prisma";
 
 function leafDataToAddress(data: string): string {
@@ -8,45 +8,33 @@ function leafDataToAddress(data: string): string {
 
 export default async function getPropGroup(
   req: NextApiRequest,
-  res: NextApiResponse<PropGroupPayload | ErrorResponse>
+  res: NextApiResponse<GroupPayload | ErrorResponse>
 ) {
   try {
-    const userAddr = `${req.query.userAddr}`;
     const propId = `${req.query.propId}`;
-    const groupId = `${req.query.groupId}`;
-    if (!propId || !groupId) {
+    const groupType = `${req.query.groupType}`;
+    if (!propId || !groupType) {
       res.status(404).json({ err: "Missing prop ID or group ID" });
     } else {
-      const prop = await prisma.group.findFirst({
+      const group = await prisma.group.findFirst({
         where: {
-          typeId: parseInt(groupId),
+          typeId: parseInt(groupType),
           propId: parseInt(propId),
         },
         select: {
           leaves: true,
+          id: true,
           root: true,
         },
       });
-      if (!prop) {
+      if (!group) {
         res
           .status(404)
           .json({ err: `Could not fetch prop with id: ${propId}` });
       } else {
-        const leafData = prop.leaves.find(
-          (el) =>
-            leafDataToAddress(el.data).toLowerCase() === userAddr.toLowerCase()
-        );
-        if (!leafData) {
-          res.status(404).json({
-            err: `Address ${userAddr} does not exist in group ${groupId} and prop ${propId}`,
-          });
-        } else {
-          res.status(200).json({
-            root: prop.root,
-            pathElements: leafData.path,
-            pathIndices: leafData.indices,
-          });
-        }
+        res
+          .status(200)
+          .json({ root: group.root, leaves: group.leaves, groupId: group.id });
       }
     }
   } catch (ex: unknown) {
