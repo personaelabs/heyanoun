@@ -2,19 +2,16 @@ import { Button } from "./button";
 import { Textarea } from "./textarea";
 import * as React from "react";
 import axios from "axios";
-import { useSignMessage, useSignTypedData } from "wagmi";
+import { useSignTypedData } from "wagmi";
 import { ethers } from "ethers";
 
 import { getSigPublicSignals } from "../utils/wasmPrecompute";
 import { PointPreComputes } from "../types/zk";
 import {
-  leafDataToAddress,
-  eip712MsgHash,
   EIP712Value,
-  prepareMerkleRootProof,
+  leafDataToAddress,
   splitToRegisters,
 } from "../utils/utils";
-import { createMerkleTree } from "../utils/merkleTree";
 import { downloadZKey } from "../utils/zkp";
 import localforage from "localforage";
 import { GroupPayload } from "../types/api";
@@ -81,29 +78,10 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       const { v, r, s } = ethers.utils.splitSignature(data);
       const isRYOdd = Number((BigInt(v) - BigInt(27)) % BigInt(2));
 
-      // TODO: copy relevant pieces into getSigPublicSignals
-//      const isYOdd = (BigInt(v) - BigInt(27)) % BigInt(2);
-//      const rPoint = ec.keyFromPublic(
-//        ec.curve.pointFromX(new BN(r.substring(2), 16), isYOdd).encode("hex"),
-//        "hex"
-//      );
-//      // Get the group element: -(m * r^−1 * G)
-//      const rInv = new BN(r.substring(2), 16).invm(SECP256K1_N);
-
-//      // w = -(r^-1 * msg)
-//      const w = rInv
-//        .mul(
-//          new BN(eip712MsgHash(variables.value as EIP712Value).substring(2), 16)
-//        )
-//        .neg()
-//        .umod(SECP256K1_N);
-//      // U = -(w * G) = -(r^-1 * msg * G)
-//      const U = ec.curve.g.mul(w);
-
       const { TPreComputes, U } = await getSigPublicSignals({
         r,
         isRYOdd,
-        msgHash: data,
+        eip712Value: variables.value as EIP712Value,
       });
 
       const signatureArtifacts: SignaturePostProcessingContents = {

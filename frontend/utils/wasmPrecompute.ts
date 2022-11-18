@@ -2,7 +2,7 @@ import BN from "bn.js";
 import { ethers } from "ethers";
 import { PointPreComputes } from "../types/zk";
 import { SECP256K1_N } from "./config";
-import { splitToRegisters } from "./utils";
+import { splitToRegisters, EIP712Value, eip712MsgHash } from "./utils";
 import initWasm from "./wasm/getPrecomputesHelpers";
 import { compute_powers } from "./wasm/getPrecomputesHelpers";
 
@@ -31,13 +31,13 @@ export const getPointPreComputes = async (
 export interface PublicSignatureData {
   r: string;
   isRYOdd: number;
-  msgHash: string;
+  eip712Value: EIP712Value;
 }
 
 export async function getSigPublicSignals({
   r,
   isRYOdd,
-  msgHash,
+  eip712Value,
 }: PublicSignatureData) {
   const rPoint = ec.keyFromPublic(
     ec.curve.pointFromX(new BN(r.substring(2), 16), isRYOdd).encode("hex"),
@@ -48,7 +48,7 @@ export async function getSigPublicSignals({
 
   // w = -(r^-1 * msg)
   const w = rInv
-    .mul(new BN(msgHash.substring(2), 16))
+    .mul(new BN(eip712MsgHash(eip712Value).substring(2), 16))
     .neg()
     .umod(SECP256K1_N);
   // U = -(w * G) = -(r^-1 * msg * G)
