@@ -6,7 +6,17 @@ const allPropsQuery = gql`
     proposals(first: 1000, orderBy: createdBlock) {
       id
       description
+
       createdBlock
+
+      startBlock
+      endBlock
+
+      proposalThreshold
+      quorumVotes
+
+      status
+
       executionETA
     }
   }
@@ -19,8 +29,13 @@ const client = new GraphQLClient(subgraphURL, { headers: {} });
 
 export async function getSubgraphProps() {
   const data = await client.request(allPropsQuery);
+  return data;
+}
 
-  // TODO: remoev!
-  console.log(data);
-  return data.proposals;
+export function extractTitle(description: string) {
+  const headerRE = /# .*/g;
+
+  const matches = description.match(headerRE) || [""];
+
+  return matches[0].slice(2);
 }

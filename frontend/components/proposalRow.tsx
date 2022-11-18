@@ -9,7 +9,7 @@ interface IProposalRowProps {
 }
 
 const ProposalRow: React.FC<IProposalRowProps> = ({
-  title = "Nouns Builder Protocol",
+  title,
   number,
   endTime = "2021-08-01T00:00:00.000Z",
   finalized = "active",
@@ -35,7 +35,7 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
       >
         <div className="flex items-center text-gray-800">
           <div className="text-lg font-semibold">{number}</div>
-          <h4 className="text-xl font-semibold ml-4">Nouns Builder Protocol</h4>
+          <h4 className="text-xl font-semibold ml-4">{title}</h4>
         </div>
         <div className="space-x-2">
           <span className="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-0.5 text-sm font-medium text-gray-800">
