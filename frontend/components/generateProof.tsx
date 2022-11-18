@@ -1,23 +1,30 @@
+import { Button } from "./button";
+import { Textarea } from "./textarea";
 import * as React from "react";
-import { useState } from "react";
-import { useAccount, useSignTypedData } from "wagmi";
-import { PointPreComputes } from "../types/zk";
-import { eip712MsgHash, splitToRegisters, EIP712Value } from "../utils/utils";
-import AnonPill, { NounSet } from "./anonPill";
+import axios from "axios";
+import { useSignMessage, useSignTypedData } from "wagmi";
 import { ethers } from "ethers";
 import { SECP256K1_N } from "../utils/config";
 import BN from "bn.js";
 import { getPointPreComputes } from "../utils/wasmPrecompute";
+import { PointPreComputes } from "../types/zk";
+import {
+  eip712MsgHash,
+  EIP712Value,
+  prepareMerkleRootProof,
+  splitToRegisters,
+} from "../utils/utils";
+import { createMerkleTree } from "../utils/merkleTree";
 import { downloadZKey } from "../utils/zkp";
 import localforage from "localforage";
 import { GroupPayload } from "../types/api";
-import axios from "axios";
-import { Textarea } from "./textarea";
-import { toUtf8Bytes } from "ethers/lib/utils";
 const elliptic = require("elliptic");
 const ec = new elliptic.ec("secp256k1");
 
-interface CommentWriterProps {
+interface Props {
+  address: string;
+  //maybe need id too
+  propNumber: number;
   propId: number;
 }
 
@@ -33,6 +40,7 @@ interface MerkleTreeProofData {
   pathIndices: string[];
 }
 
+// EIP-712 types for typed signature
 const domain = {
   name: "heyanoun-prop-150",
   version: "1",
@@ -48,9 +56,7 @@ const types = {
   ],
 } as const;
 
-const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
-  const { address, connector, isConnected } = useAccount();
-
+export const ProofComment = ({ address, propNumber, propId }: Props) => {
   const merkleTreeProofData = React.useRef<MerkleTreeProofData>();
   const [commentMsg, setCommentMsg] = React.useState<string>("");
   const [loadingText, setLoadingText] = React.useState<string | undefined>(
@@ -60,17 +66,16 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
     boolean | undefined
   >(undefined);
 
-  const [activeNounSet, setActiveNounSet] = useState<NounSet>(
-    NounSet.SingleNoun
-  );
+  // TODO: set from request
+  const [groupType, setgroupType] = React.useState<number>(1);
 
   const { data, error, isLoading, signTypedData } = useSignTypedData({
     domain,
     types,
     value: {
       propId: `${propId}`,
-      groupType: `${activeNounSet}`,
-      msgHash: ethers.utils.keccak256(toUtf8Bytes(commentMsg)),
+      groupType: `${groupType}`,
+      msgHash: ethers.utils.hashMessage(commentMsg),
     } as const,
     async onSuccess(data, variables) {
       // Verify signature when sign message succeeds
@@ -117,13 +122,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       //TODO: add loading state or progress bar first time it downloads zkey
       await downloadZKey();
 
-      const proofInputs = {
-        ...artifacts,
-        ...merkleTreeProofData.current,
-        propId: propId.toString(),
-        groupType: activeNounSet.toString(),
-      };
-
+      const proofInputs = { ...artifacts, ...merkleTreeProofData.current };
       const zkeyDb = await localforage.getItem("setMembership_final.zkey");
 
       if (!zkeyDb) {
@@ -154,7 +153,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
         await axios.get<GroupPayload>("/api/getPropGroup", {
           params: {
             propId: propId,
-            groupType: activeNounSet,
+            groupType: groupType,
           },
         })
       ).data;
@@ -197,65 +196,36 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       // TODO: cleaner error handling
       throw ex;
     }
-  }, [signTypedData]);
+  }, [address, groupType, propId, signTypedData]);
 
   return (
-    <div className="max-w-xl mx-auto">
-      <div className="bg-white rounded-md shadow-sm border border-gray-200 overflow-clip">
-        <div className="py-2 px-0">
+    <div className="flex flex-col justify-center items-center w-full">
+      <div className="rounded-md transition-all  w-full shadow-sm bg-white flex flex-col items-center justify-between border border-gray-200">
+        <div className="w-full p-5 bg-white">
           <Textarea
             value={commentMsg}
-            placeholder="Add your comment..."
+            placeholder="Add your comment"
             onChangeHandler={(newVal) => setCommentMsg(newVal)}
           />
         </div>
-        <div className="bg-gray-50 border-t border-gray-100 flex justify-end items-center p-3 space-x-2">
-          <span className="text-base text-gray-800 font-semibold mr-2">
-            Post As
-          </span>
-          <div
-            onClick={() => {
-              setActiveNounSet(NounSet.Nounder);
-            }}
-          >
-            <AnonPill
-              nounSet={NounSet.Nounder}
-              isActive={activeNounSet === NounSet.Nounder}
-            />
-          </div>
-          <div
-            onClick={() => {
-              setActiveNounSet(NounSet.SingleNoun);
-            }}
-          >
-            <AnonPill
-              nounSet={NounSet.SingleNoun}
-              isActive={activeNounSet === NounSet.SingleNoun}
-            />
-          </div>
-          <div
-            onClick={() => {
-              setActiveNounSet(NounSet.ManyNouns);
-            }}
-          >
-            <AnonPill
-              nounSet={NounSet.ManyNouns}
-              isActive={activeNounSet === NounSet.ManyNouns}
-            />
-          </div>
+        <div className="w-full flex bg-gray-100 p-5 items-center justify-center">
+          <div className="grow 1"></div>
+          <p>Post as</p>
+          <div className="px-1">Nounder</div>
+          <div className="px-1">Noun holder</div>
+          <div className="px-1">2 or more</div>
         </div>
-        <div></div>
       </div>
-      <div className="flex justify-end">
-        <button
-          onClick={prepareProof}
-          className="bg-black transition-all hover:bg-slate-900 hover:scale-105 active:scale-100 text-white font-semibold rounded-md px-4 py-2 mt-4"
+      <div className="py-2"></div>
+      <div className="flex flex-row w-full justify-end">
+        <Button
+          onClickHandler={prepareProof}
+          color={"white"}
+          backgroundColor={"black"}
         >
-          Post Anonymously
-        </button>
+          Post Anonymously{" "}
+        </Button>
       </div>
     </div>
   );
 };
-
-export default CommentWriter;

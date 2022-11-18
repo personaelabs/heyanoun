@@ -1,3 +1,4 @@
+import { _TypedDataEncoder } from "ethers/lib/utils";
 import { REGISTERS } from "./config";
 
 const addHexPrefix = (str: string) => `0x${str}`;
@@ -48,4 +49,32 @@ export function JSONStringifyCustom(val: any) {
     val,
     (key, value) => (typeof value === "bigint" ? value.toString() : value) // return everything else unchanged
   );
+}
+
+// EIP-712 types for typed signature
+// Not ideal that we have to define it twice but types of libraries are annoying
+const DOMAIN = {
+  name: "heyanoun-prop-150",
+  version: "1",
+  chainId: 1,
+  verifyingContract: "0x0000000000000000000000000000000000000000",
+};
+
+const TYPES = {
+  NounSignature: [
+    { name: "propId", type: "string" },
+    { name: "groupType", type: "string" },
+    { name: "msgHash", type: "string" },
+  ],
+};
+
+export type EIP712Value = {
+  propId: string;
+  groupType: string;
+  msgHash: string;
+};
+
+export function eip712MsgHash(value: EIP712Value) {
+  //@ts-ignore
+  return _TypedDataEncoder.hash(DOMAIN, TYPES, value);
 }

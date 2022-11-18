@@ -7,6 +7,7 @@ import CommentWriter from "../commentWriter";
 
 interface IModalProps {
   isOpen: boolean;
+  propId: number;
   handleClose: (isOpen: boolean) => void;
 }
 
@@ -25,7 +26,7 @@ const fakeProposal = {
   executionETA: null,
 };
 
-const Modal: React.FC<IModalProps> = ({ isOpen, handleClose }) => {
+const Modal: React.FC<IModalProps> = ({ isOpen, handleClose, propId }) => {
   let completeButtonRef = useRef(null);
 
   const startVal = fakeProposal.description.indexOf("\n\n") + 2;
@@ -53,7 +54,7 @@ const Modal: React.FC<IModalProps> = ({ isOpen, handleClose }) => {
               </div>
               <div className="bg-gray-50 border-t border-gray-200 py-8 pb-16 space-y-4">
                 <CommentView />
-                <CommentWriter />
+                <CommentWriter propId={propId} />
               </div>
             </div>
           </Dialog.Panel>
