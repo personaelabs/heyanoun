@@ -1,0 +1,99 @@
+.markdown h1 {
+  @apply my-3;
+  @apply text-4xl;
+  @apply font-bold;
+}
+
+.markdown h2 {
+  @apply my-4;
+  @apply text-3xl;
+  @apply font-semibold;
+}
+
+.markdown h3 {
+  @apply my-5;
+  @apply text-xl;
+}
+
+.markdown h4 {
+  @apply my-6;
+  @apply text-xl;
+  @apply font-semibold;
+}
+
+.markdown h5 {
+  @apply my-8;
+  @apply text-lg;
+  @apply font-medium;
+}
+
+.markdown h6 {
+  @apply my-10 text-base font-medium;
+}
+
+.markdown p {
+  @apply text-base my-4;
+}
+
+.markdown blockquote {
+  @apply my-4 px-8 border-l-4 border-gray-200;
+}
+
+.markdown hr {
+  @apply my-6 border-t;
+}
+
+.markdown dl,
+.markdown ol,
+.markdown ul {
+  @apply pl-3 list-inside;
+}
+
+.markdown ul ul {
+  list-style-type: circle;
+}
+
+.markdown dl dt {
+  @apply font-semibold;
+}
+
+.markdown dl dt {
+  @apply ml-6;
+}
+
+.markdown ol {
+  @apply list-decimal;
+}
+
+.markdown ul {
+  @apply list-disc;
+}
+
+.markdown a {
+  @apply underline text-blue-800 duration-200 transition-all;
+}
+
+.markdown a::hover {
+  @apply text-red-600;
+}
+
+.markdown img {
+  @apply block w-full;
+}
+
+.markdown figcaption {
+  @apply block p-3 text-center text-sm;
+}
+
+.markdown p strong {
+  @apply my-3;
+}
+
+.markdown p strong::before {
+  content: "\a";
+  white-space: pre;
+}
+
+.markdown img {
+  @apply max-w-3xl mx-auto;
+}

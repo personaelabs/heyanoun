@@ -32,9 +32,7 @@ export default async function getPropGroup(
           .status(404)
           .json({ err: `Could not fetch prop with id: ${propId}` });
       } else {
-        res
-          .status(200)
-          .json({ root: group.root, leaves: group.leaves, groupId: group.id });
+        res.status(200).json({ root: group.root, leaves: group.leaves });
       }
     }
   } catch (ex: unknown) {

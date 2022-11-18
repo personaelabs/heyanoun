@@ -1,32 +1,26 @@
-import { Button } from "./button";
-import { Textarea } from "./textarea";
 import * as React from "react";
-import axios from "axios";
-import { useSignMessage, useSignTypedData } from "wagmi";
-import { ethers } from "ethers";
-
-import { getSigPublicSignals } from "../utils/wasmPrecompute";
+import { useState } from "react";
+import { useAccount, useSignTypedData } from "wagmi";
 import { PointPreComputes } from "../types/zk";
-import {
-  leafDataToAddress,
-  eip712MsgHash,
-  EIP712Value,
-  prepareMerkleRootProof,
-  splitToRegisters,
-} from "../utils/utils";
-import { createMerkleTree } from "../utils/merkleTree";
+import { eip712MsgHash, splitToRegisters, EIP712Value } from "../utils/utils";
+import AnonPill, { NounSet } from "./anonPill";
+import { ethers } from "ethers";
+import { SECP256K1_N } from "../utils/config";
+import BN from "bn.js";
+import { getPointPreComputes } from "../utils/wasmPrecompute";
 import { downloadZKey } from "../utils/zkp";
 import localforage from "localforage";
 import { GroupPayload } from "../types/api";
+import axios from "axios";
+import { Textarea } from "./textarea";
+import { toUtf8Bytes } from "ethers/lib/utils";
+const elliptic = require("elliptic");
+const ec = new elliptic.ec("secp256k1");
 
-interface Props {
-  address: string;
-  //maybe need id too
-  propNumber: number;
+interface CommentWriterProps {
   propId: number;
 }
 
-// TODO: change this to have the piece used for verification and the piece used for proving
 interface SignaturePostProcessingContents {
   TPreComputes: PointPreComputes;
   s: bigint[];
@@ -39,7 +33,6 @@ interface MerkleTreeProofData {
   pathIndices: string[];
 }
 
-// EIP-712 types for typed signature
 const domain = {
   name: "heyanoun-prop-150",
   version: "1",
@@ -55,7 +48,9 @@ const types = {
   ],
 } as const;
 
-export const ProofComment = ({ address, propNumber, propId }: Props) => {
+const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
+  const { address, connector, isConnected } = useAccount();
+
   const merkleTreeProofData = React.useRef<MerkleTreeProofData>();
   const [commentMsg, setCommentMsg] = React.useState<string>("");
   const [loadingText, setLoadingText] = React.useState<string | undefined>(
@@ -65,51 +60,50 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
     boolean | undefined
   >(undefined);
 
-  // TODO: set from request
-  const [groupType, setgroupType] = React.useState<number>(1);
+  const [activeNounSet, setActiveNounSet] = useState<NounSet>(
+    NounSet.SingleNoun
+  );
 
   const { data, error, isLoading, signTypedData } = useSignTypedData({
     domain,
     types,
     value: {
       propId: `${propId}`,
-      groupType: `${groupType}`,
-      msgHash: ethers.utils.hashMessage(commentMsg),
+      groupType: `${activeNounSet}`,
+      msgHash: ethers.utils.keccak256(toUtf8Bytes(commentMsg)),
     } as const,
     async onSuccess(data, variables) {
       // Verify signature when sign message succeeds
       const { v, r, s } = ethers.utils.splitSignature(data);
-      const isRYOdd = Number((BigInt(v) - BigInt(27)) % BigInt(2));
+      const isYOdd = (BigInt(v) - BigInt(27)) % BigInt(2);
+      const rPoint = ec.keyFromPublic(
+        ec.curve.pointFromX(new BN(r.substring(2), 16), isYOdd).encode("hex"),
+        "hex"
+      );
+      // Get the group element: -(m * r^−1 * G)
+      const rInv = new BN(r.substring(2), 16).invm(SECP256K1_N);
 
-      // TODO: copy relevant pieces into getSigPublicSignals
-//      const isYOdd = (BigInt(v) - BigInt(27)) % BigInt(2);
-//      const rPoint = ec.keyFromPublic(
-//        ec.curve.pointFromX(new BN(r.substring(2), 16), isYOdd).encode("hex"),
-//        "hex"
-//      );
-//      // Get the group element: -(m * r^−1 * G)
-//      const rInv = new BN(r.substring(2), 16).invm(SECP256K1_N);
+      // w = -(r^-1 * msg)
+      const w = rInv
+        .mul(
+          new BN(eip712MsgHash(variables.value as EIP712Value).substring(2), 16)
+        )
+        .neg()
+        .umod(SECP256K1_N);
+      // U = -(w * G) = -(r^-1 * msg * G)
+      const U = ec.curve.g.mul(w);
 
-//      // w = -(r^-1 * msg)
-//      const w = rInv
-//        .mul(
-//          new BN(eip712MsgHash(variables.value as EIP712Value).substring(2), 16)
-//        )
-//        .neg()
-//        .umod(SECP256K1_N);
-//      // U = -(w * G) = -(r^-1 * msg * G)
-//      const U = ec.curve.g.mul(w);
+      // T = r^-1 * R
+      const T = rPoint.getPublic().mul(rInv);
 
-      const { TPreComputes, U } = await getSigPublicSignals({
-        r,
-        isRYOdd,
-        msgHash: data,
-      });
-
+      const TPreComputes = await getPointPreComputes(T.encode("hex"));
       const signatureArtifacts: SignaturePostProcessingContents = {
         TPreComputes,
-        U,
         s: splitToRegisters(s.substring(2)) as bigint[],
+        U: [
+          splitToRegisters(U.x) as bigint[],
+          splitToRegisters(U.y) as bigint[],
+        ],
       };
       await generateProof(signatureArtifacts);
     },
@@ -125,13 +119,11 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
 
       const proofInputs = {
         ...artifacts,
-        root: merkleTreeProofData.current.root,
-        pathIndices: merkleTreeProofData.current.pathIndices,
-        pathElements: merkleTreeProofData.current.pathElements,
-        propId,
-        groupType,
+        ...merkleTreeProofData.current,
+        propId: propId.toString(),
+        groupType: activeNounSet.toString(),
       };
-      console.log(proofInputs);
+
       const zkeyDb = await localforage.getItem("setMembership_final.zkey");
 
       if (!zkeyDb) {
@@ -147,7 +139,6 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       worker.onmessage = async function (e) {
         const { proof, publicSignals } = e.data;
         console.log("PROOF SUCCESSFULLY GENERATED: ", proof, publicSignals);
-
         // TODO: post to IPFS or store in our db
         setSuccessProofGen(true);
         // TODO: add toast showing success
@@ -163,14 +154,11 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
         await axios.get<GroupPayload>("/api/getPropGroup", {
           params: {
             propId: propId,
-            groupType: groupType,
+            groupType: activeNounSet,
           },
         })
       ).data;
-      const leafData = merkleTreeData.leaves.find(
-        (el) =>
-          leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
-      );
+      const leafData = merkleTreeData.leaves.find((el) => el.data === address);
       if (!leafData) {
         throw new Error("Could not find user address in selected group");
       }
@@ -209,36 +197,65 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       // TODO: cleaner error handling
       throw ex;
     }
-  }, [address, groupType, propId, signTypedData]);
+  }, [signTypedData]);
 
   return (
-    <div className="flex flex-col justify-center items-center w-full">
-      <div className="rounded-md transition-all  w-full shadow-sm bg-white flex flex-col items-center justify-between border border-gray-200">
-        <div className="w-full p-5 bg-white">
+    <div className="max-w-xl mx-auto">
+      <div className="bg-white rounded-md shadow-sm border border-gray-200 overflow-clip">
+        <div className="py-2 px-0">
           <Textarea
             value={commentMsg}
-            placeholder="Add your comment"
+            placeholder="Add your comment..."
             onChangeHandler={(newVal) => setCommentMsg(newVal)}
           />
         </div>
-        <div className="w-full flex bg-gray-100 p-5 items-center justify-center">
-          <div className="grow 1"></div>
-          <p>Post as</p>
-          <div className="px-1">Nounder</div>
-          <div className="px-1">Noun holder</div>
-          <div className="px-1">2 or more</div>
+        <div className="bg-gray-50 border-t border-gray-100 flex justify-end items-center p-3 space-x-2">
+          <span className="text-base text-gray-800 font-semibold mr-2">
+            Post As
+          </span>
+          <div
+            onClick={() => {
+              setActiveNounSet(NounSet.Nounder);
+            }}
+          >
+            <AnonPill
+              nounSet={NounSet.Nounder}
+              isActive={activeNounSet === NounSet.Nounder}
+            />
+          </div>
+          <div
+            onClick={() => {
+              setActiveNounSet(NounSet.SingleNoun);
+            }}
+          >
+            <AnonPill
+              nounSet={NounSet.SingleNoun}
+              isActive={activeNounSet === NounSet.SingleNoun}
+            />
+          </div>
+          <div
+            onClick={() => {
+              setActiveNounSet(NounSet.ManyNouns);
+            }}
+          >
+            <AnonPill
+              nounSet={NounSet.ManyNouns}
+              isActive={activeNounSet === NounSet.ManyNouns}
+            />
+          </div>
         </div>
+        <div></div>
       </div>
-      <div className="py-2"></div>
-      <div className="flex flex-row w-full justify-end">
-        <Button
-          onClickHandler={prepareProof}
-          color={"white"}
-          backgroundColor={"black"}
+      <div className="flex justify-end">
+        <button
+          onClick={prepareProof}
+          className="bg-black transition-all hover:bg-slate-900 hover:scale-105 active:scale-100 text-white font-semibold rounded-md px-4 py-2 mt-4"
         >
-          Post Anonymously{" "}
-        </Button>
+          Post Anonymously
+        </button>
       </div>
     </div>
   );
 };
+
+export default CommentWriter;
