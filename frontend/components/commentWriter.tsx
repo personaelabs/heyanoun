@@ -2,15 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import { useAccount, useSignTypedData } from "wagmi";
 import { PointPreComputes } from "../types/zk";
-import {
-  DOMAIN,
-  TYPES,
-  eip712MsgHash,
-  JSONStringifyCustom,
-  prepareMerkleRootProof,
-  splitToRegisters,
-  EIP712Value,
-} from "../utils/utils";
+import { eip712MsgHash, splitToRegisters, EIP712Value } from "../utils/utils";
 import AnonPill, { NounSet } from "./anonPill";
 import { ethers } from "ethers";
 import { SECP256K1_N } from "../utils/config";
@@ -21,7 +13,6 @@ import localforage from "localforage";
 import { GroupPayload } from "../types/api";
 import axios from "axios";
 import { Textarea } from "./textarea";
-import { createMerkleTree } from "../utils/merkleTree";
 import { toUtf8Bytes } from "ethers/lib/utils";
 const elliptic = require("elliptic");
 const ec = new elliptic.ec("secp256k1");
