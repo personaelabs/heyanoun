@@ -5,7 +5,10 @@ import axios from "axios";
 import { useSignTypedData } from "wagmi";
 import { ethers } from "ethers";
 
-import { getSigPublicSignals } from "../utils/wasmPrecompute";
+import {
+  getSigPublicSignals,
+  PublicSignatureData,
+} from "../utils/wasmPrecompute";
 import { PointPreComputes } from "../types/zk";
 import {
   EIP712Value,
@@ -78,23 +81,48 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       const { v, r, s } = ethers.utils.splitSignature(data);
       const isRYOdd = Number((BigInt(v) - BigInt(27)) % BigInt(2));
 
-      const { TPreComputes, U } = await getSigPublicSignals({
+      const publicSigData = {
         r,
         isRYOdd,
         eip712Value: variables.value as EIP712Value,
-      });
+      };
+      const { TPreComputes, U } = await getSigPublicSignals(publicSigData);
 
       const signatureArtifacts: SignaturePostProcessingContents = {
         TPreComputes,
         U,
         s: splitToRegisters(s.substring(2)) as bigint[],
       };
-      await generateProof(signatureArtifacts);
+      await generateProof(signatureArtifacts, publicSigData);
     },
   });
 
+  async function submitProof(
+    proof: any,
+    publicSignatureData: PublicSignatureData,
+    root: string
+  ) {
+    axios.post(
+      "/api/submit",
+      {
+        proof,
+        publicSignatureData,
+        root,
+      },
+      {
+        headers: {
+          // Overwrite Axios's automatically set Content-Type
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
+
   const generateProof = React.useCallback(
-    async (artifacts: SignaturePostProcessingContents) => {
+    async (
+      artifacts: SignaturePostProcessingContents,
+      publicSigData: PublicSignatureData
+    ) => {
       if (!merkleTreeProofData.current) {
         throw new Error("Missing merkle tree data");
       }
@@ -110,21 +138,27 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
         groupType,
       };
       console.log(proofInputs);
-      const zkeyDb = await localforage.getItem("setMembership_final.zkey");
+      // const zkeyDb = await localforage.getItem("setMembership_final.zkey");
 
-      if (!zkeyDb) {
-        throw new Error("zkey was not found in the database");
-      }
+      // if (!zkeyDb) {
+      //   throw new Error("zkey was not found in the database");
+      // }
 
       // @ts-ignore
-      const zkeyRawData = new Uint8Array(zkeyDb);
+      // const zkeyRawData = new Uint8Array(zkeyDb);
 
-      const zkeyFastFile = { type: "mem", data: zkeyRawData };
+      // const zkeyFastFile = { type: "mem", data: zkeyRawData };
       const worker = new Worker("./worker.js");
-      worker.postMessage([proofInputs, zkeyFastFile]);
+      worker.postMessage([proofInputs]);
       worker.onmessage = async function (e) {
         const { proof, publicSignals } = e.data;
         console.log("PROOF SUCCESSFULLY GENERATED: ", proof, publicSignals);
+
+        await submitProof(
+          proof,
+          publicSigData,
+          merkleTreeProofData.current.root
+        );
 
         // TODO: post to IPFS or store in our db
         setSuccessProofGen(true);
