@@ -22,7 +22,7 @@ const privKey = BigInt(
   "0xf5b552f608f5b552f608f5b552f6082ff5b552f608f5b552f608f5b552f6082f"
 );
 
-const ZKEY_PATH = "build/setMembership/setMembership.zkey";
+const ZKEY_PATH = "build/setMembership/setMembership_final.zkey";
 const WASM_PATH = "build/setMembership/setMembership_js/setMembership.wasm";
 
 describe("test membership", () => {
@@ -93,13 +93,14 @@ describe("test membership", () => {
     const T = rPoint.getPublic().mul(rInv);
 
     // re-write our signature and curve points
-    const signatureData: Record<string, string | string[] | bigint[]> = {
-      v: v.toString(),
-      r: splitToRegisters(r.toString("hex")),
-      s: splitToRegisters(s.toString("hex")),
-      Ux: splitToRegisters(U.x),
-      Uy: splitToRegisters(U.y),
-    };
+    const signatureData: Record<string, bigint | string | string[] | bigint[]> =
+      {
+        v: v.toString(),
+        r: splitToRegisters(r.toString("hex")),
+        s: splitToRegisters(s.toString("hex")),
+        Ux: splitToRegisters(U.x),
+        Uy: splitToRegisters(U.y),
+      };
 
     Ux = signatureData.Ux;
     Uy = signatureData.Uy;
@@ -142,11 +143,14 @@ describe("test membership", () => {
       TPreComputes,
       U: [Ux, Uy],
       s: s,
+      propId: "150",
+      groupType: "1",
       ...treeArtifacts,
     };
 
     console.log("Proving...");
     await groth16.fullProve(input, WASM_PATH, ZKEY_PATH);
+    console.log("Successfully generated proof");
 
     // if we get to here the circuit successfully passed the test
     expect(true).toBe(true);
@@ -176,6 +180,8 @@ describe("test membership", () => {
       TPreComputes,
       U: [Ux, Uy],
       s: s,
+      propId: "150",
+      groupType: "1",
       ...treeArtifacts,
     };
     await expect(

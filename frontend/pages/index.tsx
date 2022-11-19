@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import ProposalRow from "../components/proposalRow";
 import { extractTitle, getSubgraphProps } from "../utils/graphql";
+import { ProofComment } from "../components/generateProof";
 
 const getDbProps = async () =>
   (await axios.get<PropsPayload>("/api/getProps")).data;
@@ -134,13 +135,17 @@ const Home: NextPage = () => {
                   )}
 
                   {propsReverseOrder &&
+                    address &&
                     propsReverseOrder.map((prop: DisplayProp) => {
                       return (
-                        <ProposalRow
-                          key={prop.id}
-                          number={prop.id}
-                          title={prop.title}
-                        />
+                        <div key={prop.id}>
+                          <ProposalRow number={prop.id} title={prop.title} />
+                          {/* <ProofComment
+                            address={address}
+                            propId={prop.id}
+                            propNumber={prop.num}
+                          /> */}
+                        </div>
                       );
                     })}
                 </div>

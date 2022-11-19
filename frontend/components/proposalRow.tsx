@@ -23,6 +23,7 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
   return (
     <>
       <Modal
+        propId={number}
         isOpen={isOpen}
         handleClose={(e) => {
           setIsOpen(false);
