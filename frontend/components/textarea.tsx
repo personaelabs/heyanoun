@@ -48,7 +48,7 @@ interface Props {
 
 export const Textarea = ({ value, onChangeHandler, placeholder }: Props) => {
   return (
-    <Container className="w-full relative my-4">
+    <Container className="w-full relative">
       <pre className="hidden">{value}</pre>
       <textarea
         placeholder={placeholder}

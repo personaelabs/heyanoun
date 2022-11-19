@@ -6,13 +6,11 @@ import { DisplayProp } from "../pages/index";
 interface IProposalRowProps {
   title?: string;
   endTime?: string;
-  finalized?: `active` | `queued` | `executed` | `canceled`;
   prop: DisplayProp;
 }
 
 const ProposalRow: React.FC<IProposalRowProps> = ({
   endTime = "2021-08-01T00:00:00.000Z",
-  finalized = "active",
   prop,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,6 +22,7 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
   return (
     <>
       <Modal
+        description={prop.description}
         propId={prop.id}
         isOpen={isOpen}
         handleClose={(e) => {
