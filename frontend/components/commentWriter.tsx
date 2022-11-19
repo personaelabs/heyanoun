@@ -197,7 +197,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       // TODO: cleaner error handling
       throw ex;
     }
-  }, [signTypedData]);
+  }, [activeNounSet, address, propId, signTypedData]);
 
   return (
     <div className="max-w-xl mx-auto">
