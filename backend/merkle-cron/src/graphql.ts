@@ -9,6 +9,7 @@ function buildPropsQuery() {
     query {
       proposals(first: 1000, orderBy: createdBlock) {
         id
+        description
         createdBlock
       }
     }

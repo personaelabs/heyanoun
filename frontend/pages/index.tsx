@@ -7,25 +7,84 @@ import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import ProposalRow from "../components/proposalRow";
+import { extractTitle, getSubgraphProps } from "../utils/graphql";
 import { ProofComment } from "../components/generateProof";
 
-const getProps = async () =>
+const getDbProps = async () =>
   (await axios.get<PropsPayload>("/api/getProps")).data;
+
+interface DisplayProp {
+  id: number;
+  title: string;
+  description: string; // in markdown format
+
+  createdBlock: number;
+  startBlock: number;
+  endBlock: number;
+
+  status: string;
+
+  proposalThreshold: number;
+  quorumVotes: number;
+
+  executionETA: number | null;
+}
 
 const Home: NextPage = () => {
   const { address, connector, isConnected } = useAccount();
-  const { isLoading, error, data, refetch } = useQuery<PropsPayload>({
-    queryKey: ["props"],
-    queryFn: getProps,
-    retry: 1,
-    enabled: address !== undefined,
-    staleTime: 10000,
-  });
+  const { isLoading: propIdsLoading, data: propIdsPayload } =
+    useQuery<PropsPayload>({
+      queryKey: ["props"],
+      queryFn: getDbProps,
+      retry: 1,
+      enabled: address !== undefined,
+      staleTime: 10000,
+    });
 
-  const propsReverseOrder = useMemo(
-    () => data?.props.slice(0).reverse(),
-    data?.props
-  );
+  const { isLoading: propMetadataLoading, data: propMetadataPayload } =
+    useQuery({
+      queryKey: ["proposals"],
+      queryFn: getSubgraphProps,
+      retry: 1,
+      enabled: address !== undefined,
+      staleTime: 10000,
+    });
+
+  const propsReverseOrder = useMemo(() => {
+    const finalizedPropIds = new Set(
+      propIdsPayload?.props.filter((p) => p.finalized).map((p) => p.num)
+    );
+
+    let finalizedPropMetadata: DisplayProp[] = propMetadataPayload?.proposals
+      .filter((p: any) => finalizedPropIds.has(Number(p.id)))
+      .map((p: any) => {
+        // NOTE: may want to extract this out later
+        return {
+          ...p,
+          id: Number(p.id),
+
+          createdBlock: Number(p.createdBlock),
+          startBlock: Number(p.startBlock),
+          endBlock: Number(p.endBlock),
+          executionETA: p.executionETA ? Number(p.executionETA) : null,
+
+          proposalThreshold: Number(p.proposalThreshold),
+          quorumVotes: Number(p.quorumVotes),
+
+          title: extractTitle(p.description),
+        };
+      });
+
+    console.log(finalizedPropMetadata);
+
+    if (finalizedPropMetadata) {
+      return finalizedPropMetadata
+        .slice(0)
+        .sort((a: any, b: any) => b.id - a.id);
+    } else {
+      return [];
+    }
+  }, [propIdsPayload?.props, propMetadataPayload?.proposals]);
 
   return (
     <div>
@@ -62,13 +121,14 @@ const Home: NextPage = () => {
           <div className="max-w-3xl mx-auto py-10">
             <h2 className="font-semibold text-3xl"> Proposals</h2>
             <div className="mt-4">
-              {isConnected && isLoading ? (
+              {isConnected && propIdsLoading && propMetadataLoading ? (
                 <div className="bg-gray-100 border border-gray-300 p-12 py-24 rounded-md flex justify-center text-gray-800">
                   <p>loading props...</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {propsReverseOrder == undefined && (
+                  {(propsReverseOrder == undefined ||
+                    propsReverseOrder.length === 0) && (
                     <div className="bg-gray-100 border border-gray-300 p-12 py-24 rounded-md flex justify-center text-gray-800">
                       Please connect your wallet to continue
                     </div>
@@ -76,15 +136,15 @@ const Home: NextPage = () => {
 
                   {propsReverseOrder &&
                     address &&
-                    propsReverseOrder.map((prop, index) => {
+                    propsReverseOrder.map((prop: DisplayProp) => {
                       return (
-                        <div key={index}>
-                          <ProposalRow key={prop.num} number={prop.num} />
-                          <ProofComment
+                        <div key={prop.id}>
+                          <ProposalRow number={prop.id} title={prop.title} />
+                          {/* <ProofComment
                             address={address}
                             propId={prop.id}
                             propNumber={prop.num}
-                          />
+                          /> */}
                         </div>
                       );
                     })}
