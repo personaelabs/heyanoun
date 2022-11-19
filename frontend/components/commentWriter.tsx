@@ -145,7 +145,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
         setLoadingText(undefined);
       };
     },
-    []
+    [activeNounSet, propId]
   );
 
   const prepareProof = React.useCallback(async () => {
