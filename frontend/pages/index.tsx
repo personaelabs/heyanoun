@@ -13,7 +13,7 @@ import { extractTitle, getSubgraphProps } from "../utils/graphql";
 const getDbProps = async () =>
   (await axios.get<PropsPayload>("/api/getProps")).data;
 
-interface DisplayProp {
+export interface DisplayProp {
   id: number;
   title: string;
   description: string; // in markdown format
@@ -39,7 +39,7 @@ const Home: NextPage = () => {
       queryFn: getDbProps,
       retry: 1,
       enabled: true,
-      staleTime: 10000,
+      staleTime: 1000,
     });
 
   const { isLoading: propMetadataLoading, data: propMetadataPayload } =
@@ -48,7 +48,7 @@ const Home: NextPage = () => {
       queryFn: getSubgraphProps,
       retry: 1,
       enabled: true,
-      staleTime: 10000,
+      staleTime: 1000,
     });
 
   const propsReverseOrder = useMemo(() => {
@@ -134,7 +134,7 @@ const Home: NextPage = () => {
                     propsReverseOrder.map((prop: DisplayProp) => {
                       return (
                         <div key={prop.id}>
-                          <ProposalRow number={prop.id} title={prop.title} />
+                          <ProposalRow prop={prop} title={prop.title} />
                           {/* <ProofComment
                             address={address}
                             propId={prop.id}
