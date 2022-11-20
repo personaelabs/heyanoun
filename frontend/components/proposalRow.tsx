@@ -34,7 +34,6 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
     setIsOpen(true);
   };
 
-  let timeRemaining;
   let timeRemainingEN;
   let isPast;
   if (currentBlockNumber) {
@@ -79,6 +78,11 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
           {prop.status === "ACTIVE" && (
             <span className="inline-flex items-center rounded-md bg-green-100 px-2.5 py-0.5 text-sm font-medium text-green-800">
               Active
+            </span>
+          )}
+          {prop.status === "QUEUED" && (
+            <span className="inline-flex items-center rounded-md bg-yellow-100 px-2.5 py-0.5 text-sm font-medium text-yellow-800">
+              Queued
             </span>
           )}
           {prop.status === "EXECUTED" && (

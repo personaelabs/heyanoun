@@ -76,8 +76,6 @@ const Home: NextPage = () => {
         };
       });
 
-    console.log(finalizedPropMetadata);
-
     if (finalizedPropMetadata) {
       return finalizedPropMetadata
         .slice(0)
