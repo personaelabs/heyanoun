@@ -1,6 +1,5 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { PropsPayload } from "../types/api";
 import axios from "axios";
@@ -9,6 +8,7 @@ import { useMemo } from "react";
 import ProposalRow from "../components/proposalRow";
 import { extractTitle, getSubgraphProps } from "../utils/graphql";
 // import { ProofComment } from "../components/generateProof";
+import { useBlockNumber } from "wagmi";
 
 const getDbProps = async () =>
   (await axios.get<PropsPayload>("/api/getProps")).data;
@@ -31,7 +31,7 @@ export interface DisplayProp {
 }
 
 const Home: NextPage = () => {
-  const { address, connector, isConnected } = useAccount();
+  const { data: currentBlockNumber } = useBlockNumber();
 
   const { isLoading: propIdsLoading, data: propIdsPayload } =
     useQuery<PropsPayload>({
@@ -134,7 +134,10 @@ const Home: NextPage = () => {
                     propsReverseOrder.map((prop: DisplayProp) => {
                       return (
                         <div key={prop.id}>
-                          <ProposalRow prop={prop} title={prop.title} />
+                          <ProposalRow
+                            prop={prop}
+                            currentBlockNumber={currentBlockNumber}
+                          />
                           {/* <ProofComment
                             address={address}
                             propId={prop.id}
