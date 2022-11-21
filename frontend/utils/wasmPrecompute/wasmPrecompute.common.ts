@@ -1,4 +1,5 @@
 import BN from "bn.js";
+
 import { ethers } from "ethers";
 import { PointPreComputes } from "../../types/zk";
 import { SECP256K1_N } from "../config";

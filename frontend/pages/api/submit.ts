@@ -20,7 +20,7 @@ const snarkjs = require("snarkjs");
 const ec = new elliptic.ec("secp256k1");
 
 export async function verifyProof(
-  publicSignals: string[],
+  publicSignals: any,
   proof: any,
   vkeyJson: any
 ) {
@@ -66,25 +66,41 @@ export default async function submit(
   console.log("Public signature data ", publicSignatureData);
   console.log("Root: ", root); // int
 
-  if (
-    !(await verifyRoot(
+  // if (
+  //   !(await verifyRoot(
+  //     root,
+  //     publicSignatureData.eip712Value.propId,
+  //     publicSignatureData.eip712Value.groupType
+  //   ))
+  // ) {
+  //   res.status(400).send("merkle root does not match group specified!");
+  //   return;
+  // }
+
+  const { TPreComputes, U } = await getSigPublicSignals(
+    publicSignatureData,
+    false
+  );
+
+  console.log("check it: ", TPreComputes);
+  const verifiedProof = await verifyProof(
+    {
+      TPreComputes,
+      U,
       root,
-      publicSignatureData.eip712Value.propId,
-      publicSignatureData.eip712Value.groupType
-    ))
-  ) {
-    res.status(400).send("merkle root does not match group specified!");
-    return;
+      propId: publicSignatureData.eip712Value.propId,
+      groupType: publicSignatureData.eip712Value.groupType,
+    },
+    proof,
+    vkey
+  );
+  if (!verifiedProof) {
+    res.status(400).send("proof is not valid!");
+  } else {
   }
-
-  const { TPreComputes, U } = await getSigPublicSignals(publicSignatureData);
-
-  // TODO: make public signals?
-  const publicSignals = {};
-
   // steps:
-  // - verify root matches groupType + propId
-  // - compute TPreComputes and U (sig)
+  // - verify root matches groupType + propId - DONE
+  // - compute TPreComputes and U (sig) - DONE
   // - get vkey
   // - verify proof + public signals (also effectively verifies sig!)
   // - add to db
