@@ -259,7 +259,7 @@ async function init(input) {
   const imports = getImports();
 
   if (
-    typeof input === "string" ||
+    typeof input == "string" ||
     (typeof Request === "function" && input instanceof Request) ||
     (typeof URL === "function" && input instanceof URL)
   ) {

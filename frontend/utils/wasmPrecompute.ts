@@ -1,8 +1,8 @@
 import BN from "bn.js";
-import { ethers } from "ethers";
 import { PointPreComputes } from "../types/zk";
 import { SECP256K1_N } from "./config";
 import { splitToRegisters, EIP712Value, eip712MsgHash } from "./utils";
+import { getPointPreComputesNode } from "./wasm-nodejs/helper";
 import initWasm from "./wasm/getPrecomputesHelpers";
 import { compute_powers } from "./wasm/getPrecomputesHelpers";
 
@@ -34,11 +34,10 @@ export interface PublicSignatureData {
   eip712Value: EIP712Value;
 }
 
-export async function getSigPublicSignals({
-  r,
-  isRYOdd,
-  eip712Value,
-}: PublicSignatureData) {
+export async function getSigPublicSignals(
+  { r, isRYOdd, eip712Value }: PublicSignatureData,
+  useBrowserWasm: boolean = true
+) {
   const rPoint = ec.keyFromPublic(
     ec.curve.pointFromX(new BN(r.substring(2), 16), isRYOdd).encode("hex"),
     "hex"
@@ -56,10 +55,15 @@ export async function getSigPublicSignals({
 
   // T = r^-1 * R
   const T = rPoint.getPublic().mul(rInv);
-  const TPreComputes = await getPointPreComputes(T.encode("hex"));
-
-  return {
-    TPreComputes,
-    U: [splitToRegisters(U.x) as bigint[], splitToRegisters(U.y) as bigint[]],
-  };
+  if (useBrowserWasm) {
+    return {
+      TPreComputes: await getPointPreComputes(T.encode("hex")),
+      U: [splitToRegisters(U.x) as bigint[], splitToRegisters(U.y) as bigint[]],
+    };
+  } else {
+    return {
+      TPreComputes: await getPointPreComputesNode(T.encode("hex")),
+      U: [splitToRegisters(U.x) as bigint[], splitToRegisters(U.y) as bigint[]],
+    };
+  }
 }
