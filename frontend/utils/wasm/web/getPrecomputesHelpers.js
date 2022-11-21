@@ -24,7 +24,7 @@ function takeObject(idx) {
 
 const cachedTextDecoder = new TextDecoder("utf-8", {
   ignoreBOM: true,
-  fatal: true,
+  fatal: true
 });
 
 cachedTextDecoder.decode();
@@ -56,7 +56,7 @@ const encodeString =
         view.set(buf);
         return {
           read: arg.length,
-          written: buf.length,
+          written: buf.length
         };
       };
 
@@ -131,26 +131,25 @@ export function compute_powers(point_row) {
 }
 
 /**
- * @param {string} msg
- * @returns {string}
+ * @param {string} point
+ * @param {string} powers
+ * @returns {boolean}
  */
-export function hello_wasm(msg) {
-  try {
-    const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-    const ptr0 = passStringToWasm0(
-      msg,
-      wasm.__wbindgen_malloc,
-      wasm.__wbindgen_realloc
-    );
-    const len0 = WASM_VECTOR_LEN;
-    wasm.hello_wasm(retptr, ptr0, len0);
-    var r0 = getInt32Memory0()[retptr / 4 + 0];
-    var r1 = getInt32Memory0()[retptr / 4 + 1];
-    return getStringFromWasm0(r0, r1);
-  } finally {
-    wasm.__wbindgen_add_to_stack_pointer(16);
-    wasm.__wbindgen_free(r0, r1);
-  }
+export function verify_powers(point, powers) {
+  const ptr0 = passStringToWasm0(
+    point,
+    wasm.__wbindgen_malloc,
+    wasm.__wbindgen_realloc
+  );
+  const len0 = WASM_VECTOR_LEN;
+  const ptr1 = passStringToWasm0(
+    powers,
+    wasm.__wbindgen_malloc,
+    wasm.__wbindgen_realloc
+  );
+  const len1 = WASM_VECTOR_LEN;
+  const ret = wasm.verify_powers(ptr0, len0, ptr1, len1);
+  return ret !== 0;
 }
 
 function addHeapObject(obj) {

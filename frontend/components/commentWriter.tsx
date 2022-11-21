@@ -7,7 +7,7 @@ import AnonPill, { NounSet } from "./anonPill";
 import { ethers } from "ethers";
 import { SECP256K1_N } from "../utils/config";
 import BN from "bn.js";
-import { getPointPreComputes } from "../utils/wasmPrecompute";
+import { getPointPreComputes } from "../utils/wasmPrecompute/wasmPrecompute.web";
 import { downloadZKey } from "../utils/zkp";
 import localforage from "localforage";
 import { GroupPayload } from "../types/api";

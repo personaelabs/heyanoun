@@ -5,9 +5,9 @@ import { PointPreComputes } from "../../types/zk";
 import { SECP256K1_N } from "../../utils/config";
 import {
   getSigPublicSignals,
-  getPointPreComputes,
-  PublicSignatureData,
-} from "../../utils/wasmPrecompute";
+  getPointPreComputes
+} from "../../utils/wasmPrecompute/wasmPrecompute.nodejs";
+import { PublicSignatureData } from "../../utils/wasmPrecompute/wasmPrecompute.common";
 
 import { prisma } from "../../utils/prisma";
 import { connectorsForWallets } from "@rainbow-me/rainbowkit";
@@ -41,8 +41,8 @@ async function verifyRoot(
   const group = await prisma.group.findFirst({
     where: {
       propId: Number(propId),
-      typeId: Number(groupType),
-    },
+      typeId: Number(groupType)
+    }
   });
 
   return group !== null && group.root === root;

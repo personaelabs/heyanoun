@@ -5,15 +5,13 @@ import axios from "axios";
 import { useSignTypedData } from "wagmi";
 import { ethers } from "ethers";
 
-import {
-  getSigPublicSignals,
-  PublicSignatureData,
-} from "../utils/wasmPrecompute";
+import { getSigPublicSignals } from "../utils/wasmPrecompute/wasmPrecompute.web";
+import { PublicSignatureData } from "../utils/wasmPrecompute/wasmPrecompute.common";
 import { PointPreComputes } from "../types/zk";
 import {
   EIP712Value,
   leafDataToAddress,
-  splitToRegisters,
+  splitToRegisters
 } from "../utils/utils";
 import { downloadZKey } from "../utils/zkp";
 import localforage from "localforage";
@@ -44,15 +42,15 @@ const domain = {
   name: "heyanoun-prop-150",
   version: "1",
   chainId: 1,
-  verifyingContract: "0x0000000000000000000000000000000000000000",
+  verifyingContract: "0x0000000000000000000000000000000000000000"
 } as const;
 
 const types = {
   NounSignature: [
     { name: "propId", type: "string" },
     { name: "groupType", type: "string" },
-    { name: "msgHash", type: "string" },
-  ],
+    { name: "msgHash", type: "string" }
+  ]
 } as const;
 
 export const ProofComment = ({ address, propNumber, propId }: Props) => {
@@ -74,7 +72,7 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
     value: {
       propId: `${propId}`,
       groupType: `${groupType}`,
-      msgHash: ethers.utils.hashMessage(commentMsg),
+      msgHash: ethers.utils.hashMessage(commentMsg)
     } as const,
     async onSuccess(data, variables) {
       // Verify signature when sign message succeeds
@@ -84,17 +82,17 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       const publicSigData = {
         r,
         isRYOdd,
-        eip712Value: variables.value as EIP712Value,
+        eip712Value: variables.value as EIP712Value
       };
       const { TPreComputes, U } = await getSigPublicSignals(publicSigData);
 
       const signatureArtifacts: SignaturePostProcessingContents = {
         TPreComputes,
         U,
-        s: splitToRegisters(s.substring(2)) as bigint[],
+        s: splitToRegisters(s.substring(2)) as bigint[]
       };
       await generateProof(signatureArtifacts, publicSigData);
-    },
+    }
   });
 
   async function submitProof(
@@ -107,13 +105,13 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       {
         proof,
         publicSignatureData,
-        root,
+        root
       },
       {
         headers: {
           // Overwrite Axios's automatically set Content-Type
-          "Content-Type": "application/json",
-        },
+          "Content-Type": "application/json"
+        }
       }
     );
   }
@@ -135,7 +133,7 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
         pathIndices: merkleTreeProofData.current.pathIndices,
         pathElements: merkleTreeProofData.current.pathElements,
         propId,
-        groupType,
+        groupType
       };
       console.log(proofInputs);
       // const zkeyDb = await localforage.getItem("setMembership_final.zkey");
@@ -175,13 +173,12 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
         await axios.get<GroupPayload>("/api/getPropGroup", {
           params: {
             propId: propId,
-            groupType: groupType,
-          },
+            groupType: groupType
+          }
         })
       ).data;
       const leafData = merkleTreeData.leaves.find(
-        (el) =>
-          leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
+        el => leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
       );
       if (!leafData) {
         throw new Error("Could not find user address in selected group");
@@ -190,7 +187,7 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
       merkleTreeProofData.current = {
         root: merkleTreeData.root,
         pathElements: leafData.path,
-        pathIndices: leafData.indices,
+        pathIndices: leafData.indices
       };
 
       // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
@@ -230,7 +227,7 @@ export const ProofComment = ({ address, propNumber, propId }: Props) => {
           <Textarea
             value={commentMsg}
             placeholder="Add your comment"
-            onChangeHandler={(newVal) => setCommentMsg(newVal)}
+            onChangeHandler={newVal => setCommentMsg(newVal)}
           />
         </div>
         <div className="w-full flex bg-gray-100 p-5 items-center justify-center">
