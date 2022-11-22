@@ -19,6 +19,7 @@ import axios from "axios";
 import { Textarea } from "./textarea";
 import { toUtf8Bytes } from "ethers/lib/utils";
 import { createMerkleTree } from "../utils/merkleTree";
+import vkey from "../utils/verification_key.json";
 
 const elliptic = require("elliptic");
 const ec = new elliptic.ec("secp256k1");
@@ -148,8 +149,8 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       worker.postMessage([proofInputs, zkeyFastFile]);
       worker.onmessage = async function (e) {
         const { proof, publicSignals } = e.data;
-        console.log("PROOF SUCCESSFULLY GENERATED: ", proof, publicSignals);
-
+        console.log("PROOF SUCCESSFULLY GENERATED: ", proof);
+        console.log("Proof public signals: ", JSON.stringify(publicSignals));
         if (!merkleTreeProofData.current) {
           throw new Error("Missing merkle tree data");
         } else {

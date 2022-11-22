@@ -1,6 +1,5 @@
 import BN from "bn.js";
 
-import { ethers } from "ethers";
 import { PointPreComputes } from "../../types/zk";
 import { SECP256K1_N } from "../config";
 import { splitToRegisters, EIP712Value, eip712MsgHash } from "../utils";
@@ -10,9 +9,12 @@ const ec = new elliptic.ec("secp256k1");
 export const getPointPreComputes = async (
   pointHex: string,
   initWasm: any,
-  compute_powers: any
+  compute_powers: any,
+  isClient: boolean = true
 ): Promise<PointPreComputes> => {
-  await initWasm();
+  if (isClient) {
+    await initWasm();
+  }
 
   const result = compute_powers(pointHex);
   const preComputes: PointPreComputes = JSON.parse(result).powers.map(
@@ -36,13 +38,10 @@ export interface PublicSignatureData {
   compute_powers?: any;
 }
 
-export async function getSigPublicSignals({
-  r,
-  isRYOdd,
-  eip712Value,
-  initWasm,
-  compute_powers
-}: PublicSignatureData) {
+export async function getSigPublicSignals(
+  { r, isRYOdd, eip712Value, initWasm, compute_powers }: PublicSignatureData,
+  isClient: boolean = true
+) {
   const rPoint = ec.keyFromPublic(
     ec.curve.pointFromX(new BN(r.substring(2), 16), isRYOdd).encode("hex"),
     "hex"
@@ -63,11 +62,12 @@ export async function getSigPublicSignals({
   const TPreComputes = await getPointPreComputes(
     T.encode("hex"),
     initWasm,
-    compute_powers
+    compute_powers,
+    isClient
   );
 
   return {
     TPreComputes,
-    U: [splitToRegisters(U.x) as bigint[], splitToRegisters(U.y) as bigint[]]
+    U: [splitToRegisters(U.x) as bigint[], splitToRegisters(U.y) as bigint[]],
   };
 }

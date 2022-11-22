@@ -27,7 +27,7 @@ function takeObject(idx) {
 
 let cachedTextDecoder = new TextDecoder("utf-8", {
   ignoreBOM: true,
-  fatal: true
+  fatal: true,
 });
 
 cachedTextDecoder.decode();
@@ -59,7 +59,7 @@ const encodeString =
         view.set(buf);
         return {
           read: arg.length,
-          written: buf.length
+          written: buf.length,
         };
       };
 
@@ -197,8 +197,9 @@ module.exports.__wbindgen_throw = function (arg0, arg1) {
   throw new Error(getStringFromWasm0(arg0, arg1));
 };
 
-const path = require("path").join(__dirname, "getPreComputes.wasm");
-const bytes = require("fs").readFileSync(path);
+const bytes = require("fs").readFileSync(
+  process.cwd() + "/utils/wasm/nodejs/getPreComputes.wasm"
+);
 
 const wasmModule = new WebAssembly.Module(bytes);
 const wasmInstance = new WebAssembly.Instance(wasmModule, imports);
