@@ -1,6 +1,5 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { PropsPayload } from "../types/api";
 import axios from "axios";
@@ -8,12 +7,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import ProposalRow from "../components/proposalRow";
 import { extractTitle, getSubgraphProps } from "../utils/graphql";
-import { ProofComment } from "../components/generateProof";
+// import { ProofComment } from "../components/generateProof";
+import { useBlockNumber } from "wagmi";
 
 const getDbProps = async () =>
   (await axios.get<PropsPayload>("/api/getProps")).data;
 
-interface DisplayProp {
+export interface DisplayProp {
   id: number;
   title: string;
   description: string; // in markdown format
@@ -31,14 +31,15 @@ interface DisplayProp {
 }
 
 const Home: NextPage = () => {
-  const { address, connector, isConnected } = useAccount();
+  const { data: currentBlockNumber } = useBlockNumber();
+
   const { isLoading: propIdsLoading, data: propIdsPayload } =
     useQuery<PropsPayload>({
       queryKey: ["props"],
       queryFn: getDbProps,
       retry: 1,
-      enabled: address !== undefined,
-      staleTime: 10000,
+      enabled: true,
+      staleTime: 1000,
     });
 
   const { isLoading: propMetadataLoading, data: propMetadataPayload } =
@@ -46,8 +47,8 @@ const Home: NextPage = () => {
       queryKey: ["proposals"],
       queryFn: getSubgraphProps,
       retry: 1,
-      enabled: address !== undefined,
-      staleTime: 10000,
+      enabled: true,
+      staleTime: 1000,
     });
 
   const propsReverseOrder = useMemo(() => {
@@ -74,8 +75,6 @@ const Home: NextPage = () => {
           title: extractTitle(p.description),
         };
       });
-
-    console.log(finalizedPropMetadata);
 
     if (finalizedPropMetadata) {
       return finalizedPropMetadata
@@ -121,25 +120,22 @@ const Home: NextPage = () => {
           <div className="max-w-3xl mx-auto py-10">
             <h2 className="font-semibold text-3xl"> Proposals</h2>
             <div className="mt-4">
-              {isConnected && propIdsLoading && propMetadataLoading ? (
+              {propIdsLoading ||
+              propMetadataLoading ||
+              propsReverseOrder == undefined ? (
                 <div className="bg-gray-100 border border-gray-300 p-12 py-24 rounded-md flex justify-center text-gray-800">
                   <p>loading props...</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {(propsReverseOrder == undefined ||
-                    propsReverseOrder.length === 0) && (
-                    <div className="bg-gray-100 border border-gray-300 p-12 py-24 rounded-md flex justify-center text-gray-800">
-                      Please connect your wallet to continue
-                    </div>
-                  )}
-
                   {propsReverseOrder &&
-                    address &&
                     propsReverseOrder.map((prop: DisplayProp) => {
                       return (
                         <div key={prop.id}>
-                          <ProposalRow number={prop.id} title={prop.title} />
+                          <ProposalRow
+                            prop={prop}
+                            currentBlockNumber={currentBlockNumber}
+                          />
                           {/* <ProofComment
                             address={address}
                             propId={prop.id}

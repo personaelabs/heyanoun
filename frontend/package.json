@@ -23,13 +23,14 @@
     "ethers": "^5.7.2",
     "graphql": "16.6.0",
     "graphql-request": "5.0.0",
+    "javascript-time-ago": "^2.5.9",
     "localforage": "^1.10.0",
     "next": "12.3.1",
     "prisma": "^4.6.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "styled-components": "^5.3.6",
     "react-markdown": "^8.0.3",
+    "styled-components": "^5.3.6",
     "wagmi": "^0.7.13"
   },
   "devDependencies": {
