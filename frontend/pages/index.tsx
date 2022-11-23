@@ -100,11 +100,11 @@ const Home: NextPage = () => {
               <ConnectButton />
             </nav>
             <div className="max-w-7xl mx-auto pt-12 pb-8 px-4 sm:px-6 lg:px-8">
-              <div className="lg:text-center max-w-2xl mx-auto">
-                <h1 className="text-5xl text-white font-bold leading-14">
+              <div className="text-center md:text-center max-w-2xl mx-auto">
+                <h1 className="text-3xl md:text-5xl text-white font-bold leading-[40px] md:leading-14">
                   Give Feedback On Proposals Anonymously
                 </h1>
-                <p className="mt-4 text-xl font-normal leading-8 text-white">
+                <p className="mt-4 text-lg md:text-xl font-normal md:leading-8 text-white">
                   Anoun allows noun-holders to give feedback on proposals while
                   maintaining their privacy using zero-knowledge proofs.{" "}
                 </p>
@@ -117,7 +117,7 @@ const Home: NextPage = () => {
         </div>
 
         <div className="bg-gray-50">
-          <div className="max-w-3xl mx-auto py-10">
+          <div className="max-w-3xl mx-auto py-5 md:py-10 px-3 md:px-0">
             <h2 className="font-semibold text-3xl"> Proposals</h2>
             <div className="mt-4">
               {propIdsLoading ||
@@ -127,7 +127,7 @@ const Home: NextPage = () => {
                   <p>loading props...</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   {propsReverseOrder &&
                     propsReverseOrder.map((prop: DisplayProp) => {
                       return (
@@ -136,11 +136,6 @@ const Home: NextPage = () => {
                             prop={prop}
                             currentBlockNumber={currentBlockNumber}
                           />
-                          {/* <ProofComment
-                            address={address}
-                            propId={prop.id}
-                            propNumber={prop.num}
-                          /> */}
                         </div>
                       );
                     })}
