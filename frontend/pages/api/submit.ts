@@ -80,8 +80,6 @@ export default async function submit(
       proof
     );
 
-    console.log("verified: ", verifiedProof);
-
     if (!verifiedProof) {
       res.status(400).send("proof is not valid!");
     } else {
