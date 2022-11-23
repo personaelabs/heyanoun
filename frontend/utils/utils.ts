@@ -51,10 +51,6 @@ export function JSONStringifyCustom(val: any) {
   );
 }
 
-export function leafDataToAddress(data: string): string {
-  return "0x" + BigInt(data).toString(16).padStart(40, "0");
-}
-
 // EIP-712 types for typed signature
 // Not ideal that we have to define it twice but types of libraries are annoying
 const DOMAIN = {
