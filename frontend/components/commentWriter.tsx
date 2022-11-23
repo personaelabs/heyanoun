@@ -2,15 +2,9 @@ import * as React from "react";
 import { useState } from "react";
 import { useAccount, useSignTypedData } from "wagmi";
 import { PointPreComputes } from "../types/zk";
-import {
-  splitToRegisters,
-  EIP712Value,
-  prepareMerkleRootProof,
-} from "../utils/utils";
+import { splitToRegisters, EIP712Value } from "../utils/utils";
 import AnonPill, { NounSet } from "./anonPill";
 import { ethers } from "ethers";
-import { SECP256K1_N } from "../utils/config";
-import BN from "bn.js";
 import { getSigPublicSignals } from "../utils/wasmPrecompute/wasmPrecompute.web";
 import { PublicSignatureData } from "../utils/wasmPrecompute/wasmPrecompute.common";
 import { downloadZKey } from "../utils/zkp";
@@ -18,8 +12,7 @@ import localforage from "localforage";
 import axios from "axios";
 import { Textarea } from "./textarea";
 import { toUtf8Bytes } from "ethers/lib/utils";
-import { createMerkleTree } from "../utils/merkleTree";
-import vkey from "../utils/verification_key.json";
+import { GroupPayload } from "../types/api";
 
 const elliptic = require("elliptic");
 const ec = new elliptic.ec("secp256k1");
@@ -150,7 +143,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       worker.onmessage = async function (e) {
         const { proof, publicSignals } = e.data;
         console.log("PROOF SUCCESSFULLY GENERATED: ", proof);
-        console.log("Proof public signals: ", JSON.stringify(publicSignals));
+
         if (!merkleTreeProofData.current) {
           throw new Error("Missing merkle tree data");
         } else {
@@ -166,51 +159,51 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
         }
       };
     },
-    []
+    [activeNounSet, propId]
   );
 
   const prepareProof = React.useCallback(async () => {
     try {
-      // const merkleTreeData = (
-      //   await axios.get<GroupPayload>("/api/getPropGroup", {
-      //     params: {
-      //       propId: propId,
-      //       groupType: activeNounSet,
-      //     },
-      //   })
-      // ).data;
-      // const leafData = merkleTreeData.leaves.find((el) => el.data === address);
-      // if (!leafData) {
-      //   throw new Error("Could not find user address in selected group");
-      // }
-
-      // merkleTreeProofData.current = {
-      //   root: merkleTreeData.root,
-      //   pathElements: leafData.path,
-      //   pathIndices: leafData.indices,
-      // };
-
-      // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
-      //       if you want to test non-noun holding addresses
-      const { pathElements, pathIndices, pathRoot } = await createMerkleTree(
-        "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
-        [
-          "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
-          "0x199D5ED7F45F4eE35960cF22EAde2076e95B253F",
-        ]
-      );
-
-      const merkleTreeData = prepareMerkleRootProof(
-        pathElements,
-        pathIndices,
-        pathRoot
-      );
+      const merkleTreeData = (
+        await axios.get<GroupPayload>("/api/getPropGroup", {
+          params: {
+            propId: propId,
+            groupType: activeNounSet,
+          },
+        })
+      ).data;
+      const leafData = merkleTreeData.leaves.find((el) => el.data === address);
+      if (!leafData) {
+        throw new Error("Could not find user address in selected group");
+      }
 
       merkleTreeProofData.current = {
         root: merkleTreeData.root,
-        pathElements: merkleTreeData.pathElements,
-        pathIndices: merkleTreeData.pathIndices,
+        pathElements: leafData.path,
+        pathIndices: leafData.indices,
       };
+
+      // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
+      //       if you want to test non-noun holding addresses
+      // const { pathElements, pathIndices, pathRoot } = await createMerkleTree(
+      //   "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
+      //   [
+      //     "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
+      //     "0x199D5ED7F45F4eE35960cF22EAde2076e95B253F",
+      //   ]
+      // );
+
+      // const merkleTreeData = prepareMerkleRootProof(
+      //   pathElements,
+      //   pathIndices,
+      //   pathRoot
+      // );
+
+      // merkleTreeProofData.current = {
+      //   root: merkleTreeData.root,
+      //   pathElements: merkleTreeData.pathElements,
+      //   pathIndices: merkleTreeData.pathIndices,
+      // };
 
       // triggers callback which will call generateProof when it's done
       signTypedData();
@@ -218,7 +211,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       // TODO: cleaner error handling
       throw ex;
     }
-  }, [signTypedData]);
+  }, [activeNounSet, address, propId, signTypedData]);
 
   return (
     <div className="max-w-xl mx-auto">
