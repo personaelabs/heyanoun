@@ -136,11 +136,6 @@ const Home: NextPage = () => {
                             prop={prop}
                             currentBlockNumber={currentBlockNumber}
                           />
-                          {/* <ProofComment
-                            address={address}
-                            propId={prop.id}
-                            propNumber={prop.num}
-                          /> */}
                         </div>
                       );
                     })}
