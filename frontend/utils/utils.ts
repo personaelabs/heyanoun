@@ -78,7 +78,3 @@ export function eip712MsgHash(value: EIP712Value) {
   //@ts-ignore
   return _TypedDataEncoder.hash(DOMAIN, TYPES, value);
 }
-
-export function leafDataToAddress(data: string): string {
-  return "0x" + BigInt(data).toString(16).padStart(40, "0");
-}
