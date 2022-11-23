@@ -14,9 +14,6 @@ import { Textarea } from "./textarea";
 import { toUtf8Bytes } from "ethers/lib/utils";
 import { GroupPayload } from "../types/api";
 
-const elliptic = require("elliptic");
-const ec = new elliptic.ec("secp256k1");
-
 interface CommentWriterProps {
   propId: number;
 }

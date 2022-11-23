@@ -7,10 +7,7 @@ import { prisma } from "../../utils/prisma";
 import vkey from "../../utils/verification_key.json";
 import _ from "lodash";
 
-const elliptic = require("elliptic");
 const snarkjs = require("snarkjs");
-
-const ec = new elliptic.ec("secp256k1");
 
 export async function verifyProof(publicSignals: any, proof: any) {
   const proofVerified = await snarkjs.groth16.verify(
