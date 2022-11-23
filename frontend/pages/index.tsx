@@ -7,7 +7,6 @@ import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import ProposalRow from "../components/proposalRow";
-import { ProofComment } from "../components/generateProof";
 
 const getProps = async () =>
   (await axios.get<PropsPayload>("/api/getProps")).data;
@@ -80,11 +79,6 @@ const Home: NextPage = () => {
                       return (
                         <div key={index}>
                           <ProposalRow key={prop.num} number={prop.num} />
-                          <ProofComment
-                            address={address}
-                            propId={prop.id}
-                            propNumber={prop.num}
-                          />
                         </div>
                       );
                     })}
