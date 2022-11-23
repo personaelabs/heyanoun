@@ -2,7 +2,12 @@ import * as React from "react";
 import { useState } from "react";
 import { useAccount, useSignTypedData } from "wagmi";
 import { PointPreComputes } from "../types/zk";
-import { splitToRegisters, EIP712Value } from "../utils/utils";
+import {
+  leafDataToAddress,
+  eip712MsgHash,
+  splitToRegisters,
+  EIP712Value,
+} from "../utils/utils";
 import AnonPill, { NounSet } from "./anonPill";
 import { ethers } from "ethers";
 import { getSigPublicSignals } from "../utils/wasmPrecompute/wasmPrecompute.web";
@@ -169,7 +174,12 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
           },
         })
       ).data;
-      const leafData = merkleTreeData.leaves.find((el) => el.data === address);
+      console.log(merkleTreeData.leaves[0]);
+      const leafData = merkleTreeData.leaves.find(
+        (el) =>
+          address &&
+          leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
+      );
       if (!leafData) {
         throw new Error("Could not find user address in selected group");
       }
