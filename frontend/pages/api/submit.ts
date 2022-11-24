@@ -6,6 +6,8 @@ import { prisma } from "../../utils/prisma";
 
 import vkey from "../../utils/verification_key.json";
 import _ from "lodash";
+import axios from "axios";
+import { postToIpfs } from "../../utils/ipfs";
 
 const snarkjs = require("snarkjs");
 
@@ -80,6 +82,15 @@ export default async function submit(
     if (!verifiedProof) {
       res.status(400).send("proof is not valid!");
     } else {
+      const cid = await postToIpfs(
+        JSON.stringify({
+          proof,
+          propId: publicSignatureData.eip712Value.propId,
+          groupType: publicSignatureData.eip712Value.groupType,
+          TPreComputes,
+          U,
+        })
+      );
       res.status(200).json({ success: true });
     }
   } catch (ex: unknown) {
