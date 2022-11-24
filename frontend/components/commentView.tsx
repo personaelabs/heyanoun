@@ -1,9 +1,12 @@
 // import Image from 'next/image'
 import AnonPill, { NounSet } from "./anonPill";
 
-interface ICommentViewProps {}
+interface ICommentViewProps {
+  message: string;
+  proof: string;
+}
 
-const CommentView: React.FC<ICommentViewProps> = ({}) => {
+const CommentView: React.FC<ICommentViewProps> = ({ message, proof }) => {
   return (
     <div className="bg-white rounded-md shadow-sm max-w-xl mx-auto py-4 px-5 border border-gray-200">
       <div className="flex justify-between">
@@ -19,12 +22,7 @@ const CommentView: React.FC<ICommentViewProps> = ({}) => {
         </div>
         <AnonPill nounSet={NounSet.Nounder} />
       </div>
-      <p className="mt-3">
-        I&apos;m not convinced that we should be making a binary decision on
-        this. Nor am I convinced that they need all 1000 ETH right away to
-        bootstrap the DAO. My biggest concern with this proposal is that
-        it&apos;s all or nothing. this is a common issue with Nouns proposals.
-      </p>
+      <p className="mt-3">{message}</p>
     </div>
   );
 };

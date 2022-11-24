@@ -4,6 +4,9 @@ import ReactMarkdown from "react-markdown";
 import styles from "./Modal.module.css";
 import CommentView from "../commentView";
 import CommentWriter from "../commentWriter";
+import { PropCommentsPayload } from "../../types/api";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 
 interface IModalProps {
   isOpen: boolean;
@@ -12,6 +15,15 @@ interface IModalProps {
   description: string;
 }
 
+const getPropComments = (propId: number) => async () =>
+  (
+    await axios.get<PropCommentsPayload>("/api/getPropComments", {
+      params: {
+        propId,
+      },
+    })
+  ).data;
+
 const Modal: React.FC<IModalProps> = ({
   isOpen,
   handleClose,
@@ -19,6 +31,14 @@ const Modal: React.FC<IModalProps> = ({
   description,
 }) => {
   let completeButtonRef = useRef(null);
+
+  const { isLoading, data } = useQuery<PropCommentsPayload>({
+    queryKey: [`${propId}_comments`],
+    queryFn: getPropComments(propId),
+    retry: 1,
+    enabled: true,
+    staleTime: 1000,
+  });
 
   // const startVal = description.indexOf("\n\n") + 2;
   // const cleanedDescription = description.slice(startVal);
@@ -44,7 +64,17 @@ const Modal: React.FC<IModalProps> = ({
                 </ReactMarkdown>
               </div>
               <div className="bg-gray-50 border-t border-gray-200 py-8 pb-16 space-y-4">
-                <CommentView />
+                {isLoading || !data ? (
+                  <p>loading...</p>
+                ) : (
+                  data.comments.map((comment) => (
+                    <CommentView
+                      key={comment.id}
+                      message={comment.commentMsg}
+                      proof={comment.ipfsProof}
+                    />
+                  ))
+                )}
                 <CommentWriter propId={propId} />
               </div>
             </div>
