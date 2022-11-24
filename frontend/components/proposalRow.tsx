@@ -58,13 +58,15 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
 
       <div
         onClick={openModal}
-        className="rounded-md transition-all shadow-sm bg-white p-5 flex items-center justify-between border border-gray-200 hover:border-gray-300 hover:cursor-pointer"
+        className="rounded-md transition-all shadow-sm bg-white p-3 md:p-5 flex items-center justify-between border border-gray-200 hover:border-gray-300 hover:cursor-pointer"
       >
         <div className="flex items-center text-gray-800">
-          <div className="text-lg font-semibold">{prop.id}</div>
-          <h4 className="text-xl font-semibold ml-4">{prop.title}</h4>
+          <div className="text-base md:text-lg font-semibold">{prop.id}</div>
+          <h4 className="text-lg md:text-xl font-semibold ml-3 md:ml-4">
+            {prop.title}
+          </h4>
         </div>
-        <div className="space-x-2">
+        <div className="space-x-0 md:space-x-2 space-y-2 md:space-y-0">
           {!isPast && currentBlockNumber !== undefined && (
             <span className="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-0.5 text-sm font-medium text-gray-800">
               {timeRemainingEN}
