@@ -20,7 +20,6 @@ const CommentView: React.FC<ICommentViewProps> = ({
 }) => {
   const groupTypeToNounSet = React.useMemo(() => {
     const nounSet: NounSet = groupType;
-    console.log(groupType);
     return nounSet;
   }, [groupType]);
 
