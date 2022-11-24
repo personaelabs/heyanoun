@@ -6,7 +6,6 @@ import { prisma } from "../../utils/prisma";
 
 import vkey from "../../utils/verification_key.json";
 import _ from "lodash";
-import axios from "axios";
 import { postToIpfs } from "../../utils/ipfs";
 
 const snarkjs = require("snarkjs");
@@ -49,6 +48,7 @@ export default async function submit(
 
     const root = body.root;
     const proof = body.proof;
+    const commentMsg = body.commentMsg;
     const publicSignatureData: PublicSignatureData = body.publicSignatureData;
 
     console.log("Proof: ", proof);
@@ -91,6 +91,17 @@ export default async function submit(
           U,
         })
       );
+      await prisma.comment.create({
+        data: {
+          prop: {
+            connect: {
+              num: Number(publicSignatureData.eip712Value.propId),
+            },
+          },
+          commentMsg,
+          ipfsProof: `https://ipfs.io/ipfs/${cid}`,
+        },
+      });
       res.status(200).json({ success: true });
     }
   } catch (ex: unknown) {

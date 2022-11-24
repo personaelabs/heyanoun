@@ -16,6 +16,7 @@ model Prop {
 
   finalized Boolean @default(false)
 
+  Comments Comment[]
   Group Group[]
 }
 
@@ -55,3 +56,13 @@ model Leaf {
   @@unique([data, groupId])
 }
 
+model Comment {
+  id      Int    @id @default(autoincrement())
+  commentMsg String
+
+  propNum Int 
+  prop  Prop @relation(fields: [propNum], references: [num])
+
+  ipfsProof String
+
+}

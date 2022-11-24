@@ -103,7 +103,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
   ) {
     axios.post(
       "/api/submit",
-      { proof, publicSignatureData, root },
+      { proof, publicSignatureData, root, commentMsg },
       {
         headers: {
           "Content-Type": "application/json",
