@@ -96,7 +96,7 @@ export default async function submit(
               num: Number(publicSignatureData.eip712Value.propId),
             },
           },
-          groupType: {
+          group: {
             connect: {
               groupType: Number(publicSignatureData.eip712Value.groupType),
             },
