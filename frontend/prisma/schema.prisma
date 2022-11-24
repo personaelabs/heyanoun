@@ -64,8 +64,10 @@ model Comment {
 
   createdAt DateTime @default(now())
 
-  groupType Int @default(1)
-  group    GroupType @relation(fields: [groupType], references: [id])
+  // Note we can't call this field `groupType` since this would interfere with our model
+  // hence why we choose this slightly awkward name
+  groupTypeNum Int @default(1)
+  group    GroupType @relation(fields: [groupTypeNum], references: [id])
 
   propNum Int 
   prop  Prop @relation(fields: [propNum], references: [num])

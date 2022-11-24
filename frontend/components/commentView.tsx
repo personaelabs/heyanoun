@@ -8,7 +8,7 @@ dayjs.extend(relativeTime);
 interface ICommentViewProps {
   message: string;
   groupType: number;
-  createdAt: string;
+  createdAt: Date;
   proof: string;
 }
 
