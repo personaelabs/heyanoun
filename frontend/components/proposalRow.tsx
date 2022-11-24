@@ -36,7 +36,14 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
 
   let timeRemainingEN;
   let isPast;
+  let isDefeated = false;
   if (currentBlockNumber) {
+    // The graphQL query returns a DEFEATED props as ACTIVE, so have to do
+    // this check here to derive the defaeted state.
+    if (currentBlockNumber > prop.endBlock && prop.status === "ACTIVE") {
+      isDefeated = true;
+    }
+
     const timeRemaining = calcTimeUntilFutureBlock(
       currentBlockNumber,
       prop.endBlock
@@ -77,7 +84,7 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
               Pending
             </span>
           )}
-          {prop.status === "ACTIVE" && (
+          {prop.status === "ACTIVE" && !isDefeated && (
             <span className="inline-flex items-center rounded-md bg-green-100 px-2.5 py-0.5 text-sm font-medium text-green-800">
               Active
             </span>
@@ -92,9 +99,14 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
               Executed
             </span>
           )}
-          {prop.status === "DEFEATED" && (
+          {isDefeated && (
             <span className="inline-flex items-center rounded-md bg-red-100 px-2.5 py-0.5 text-sm font-medium text-red-800">
               Defeated
+            </span>
+          )}
+          {prop.status === "VETOED" && (
+            <span className="inline-flex items-center rounded-md bg-red-100 px-2.5 py-0.5 text-sm font-medium text-red-800">
+              Vetoed
             </span>
           )}
           {prop.status === "CANCELLED" && (
