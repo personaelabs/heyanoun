@@ -17,7 +17,6 @@ import axios from "axios";
 import { Textarea } from "./textarea";
 import { toUtf8Bytes } from "ethers/lib/utils";
 import { GroupPayload } from "../types/api";
-import { createMerkleTree } from "../utils/merkleTree";
 
 interface CommentWriterProps {
   propId: number;
