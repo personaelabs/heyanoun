@@ -98,7 +98,7 @@ export default async function submit(
           },
           group: {
             connect: {
-              groupTypeNum: Number(publicSignatureData.eip712Value.groupType),
+              id: 1,
             },
           },
           commentMsg,

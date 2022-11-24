@@ -71,7 +71,7 @@ const Modal: React.FC<IModalProps> = ({
                     <CommentView
                       key={comment.id}
                       createdAt={comment.createdAt}
-                      groupType={Number(comment.groupTypeNum)}
+                      groupType={Number(comment.groupType)}
                       message={comment.commentMsg}
                       proof={comment.ipfsProof}
                     />
