@@ -36,7 +36,7 @@ const Modal: React.FC<IModalProps> = ({
     queryKey: [`${propId}_comments`],
     queryFn: getPropComments(propId),
     retry: 1,
-    enabled: true,
+    enabled: isOpen,
     staleTime: 1000,
   });
 
@@ -70,6 +70,7 @@ const Modal: React.FC<IModalProps> = ({
                   data.comments.map((comment) => (
                     <CommentView
                       key={comment.id}
+                      groupType={Number(comment.groupType)}
                       message={comment.commentMsg}
                       proof={comment.ipfsProof}
                     />

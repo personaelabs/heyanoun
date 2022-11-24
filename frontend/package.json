@@ -19,6 +19,7 @@
     "bn.js": "^5.2.1",
     "circomlibjs": "^0.1.7",
     "classnames": "^2.3.2",
+    "dayjs": "^1.11.6",
     "elliptic": "^6.5.4",
     "ethers": "^5.7.2",
     "graphql": "16.6.0",
