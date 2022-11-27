@@ -41,6 +41,8 @@ model GroupType {
   id Int @id @default(autoincrement())
 
   name  String  @unique
+
+  Comments Comment[]
   Group Group[]
 }
 
@@ -59,6 +61,11 @@ model Leaf {
 model Comment {
   id      Int    @id @default(autoincrement())
   commentMsg String
+
+  createdAt DateTime @default(now())
+
+  groupType Int 
+  group    GroupType @relation(fields: [groupType], references: [id])
 
   propNum Int 
   prop  Prop @relation(fields: [propNum], references: [num])

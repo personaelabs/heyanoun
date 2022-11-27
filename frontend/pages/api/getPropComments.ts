@@ -1,34 +1,30 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
-import { ErrorResponse, GroupPayload } from "../../types/api";
+import { ErrorResponse, PropCommentsPayload } from "../../types/api";
 import { prisma } from "../../utils/prisma";
 
-export default async function getPropGroup(
+export default async function getPropComments(
   req: NextApiRequest,
-  res: NextApiResponse<GroupPayload | ErrorResponse>
+  res: NextApiResponse<PropCommentsPayload | ErrorResponse>
 ) {
   try {
     const propId = `${req.query.propId}`;
-    const groupType = `${req.query.groupType}`;
-    if (!propId || !groupType) {
+    if (!propId) {
       res.status(404).json({ err: "Missing prop ID or group ID" });
     } else {
-      const group = await prisma.group.findFirst({
+      const prop = await prisma.prop.findFirst({
         where: {
-          typeId: parseInt(groupType),
-          propId: parseInt(propId),
+          id: parseInt(propId),
         },
         select: {
-          leaves: true,
-          id: true,
-          root: true,
+          Comments: true,
         },
       });
-      if (!group) {
+      if (!prop) {
         res
           .status(404)
           .json({ err: `Could not fetch prop with id: ${propId}` });
       } else {
-        res.status(200).json({ root: group.root, leaves: group.leaves });
+        res.status(200).json({ comments: prop.Comments });
       }
     }
   } catch (ex: unknown) {

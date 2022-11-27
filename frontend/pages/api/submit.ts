@@ -96,6 +96,11 @@ export default async function submit(
               num: Number(publicSignatureData.eip712Value.propId),
             },
           },
+          group: {
+            connect: {
+              id: Number(publicSignatureData.eip712Value.groupType),
+            },
+          },
           commentMsg,
           ipfsProof: `https://${HOST}/ipfs/${cid}`,
         },
