@@ -4,7 +4,6 @@ import { useAccount, useSignTypedData } from "wagmi";
 import { PointPreComputes } from "../types/zk";
 import {
   leafDataToAddress,
-  eip712MsgHash,
   splitToRegisters,
   EIP712Value,
 } from "../utils/utils";
@@ -96,22 +95,6 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
     },
   });
 
-  async function submitProof(
-    proof: any,
-    publicSignatureData: PublicSignatureData,
-    root: string
-  ) {
-    axios.post(
-      "/api/submit",
-      { proof, publicSignatureData, root },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-  }
-
   const generateProof = React.useCallback(
     async (
       artifacts: SignaturePostProcessingContents,
@@ -149,19 +132,27 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
         if (!merkleTreeProofData.current) {
           throw new Error("Missing merkle tree data");
         } else {
-          await submitProof(
-            proof,
-            publicSigData,
-            merkleTreeProofData.current.root
+          axios.post(
+            "/api/submit",
+            {
+              proof,
+              publicSignatureData: publicSigData,
+              root: merkleTreeProofData.current.root,
+              commentMsg,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
           );
-          // TODO: post to IPFS or store in our db
           setSuccessProofGen(true);
           // TODO: add toast showing success
           setLoadingText(undefined);
         }
       };
     },
-    [activeNounSet, propId]
+    [activeNounSet, commentMsg, propId]
   );
 
   const prepareProof = React.useCallback(async () => {

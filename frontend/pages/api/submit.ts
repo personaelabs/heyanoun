@@ -6,6 +6,8 @@ import { prisma } from "../../utils/prisma";
 
 import vkey from "../../utils/verification_key.json";
 import _ from "lodash";
+import { HOST, postToIpfs } from "../../utils/ipfs";
+import { JSONStringifyCustom } from "../../utils/utils";
 
 const snarkjs = require("snarkjs");
 
@@ -47,11 +49,8 @@ export default async function submit(
 
     const root = body.root;
     const proof = body.proof;
+    const commentMsg = body.commentMsg;
     const publicSignatureData: PublicSignatureData = body.publicSignatureData;
-
-    console.log("Proof: ", proof);
-    console.log("Public signature data ", publicSignatureData);
-    console.log("Root: ", root); // int
 
     if (
       !(await verifyRoot(
@@ -80,9 +79,31 @@ export default async function submit(
     if (!verifiedProof) {
       res.status(400).send("proof is not valid!");
     } else {
-      res.status(200).json({ success: true });
+      const cid = await postToIpfs(
+        JSONStringifyCustom({
+          proof,
+          commentMsg,
+          propId: publicSignatureData.eip712Value.propId,
+          groupType: publicSignatureData.eip712Value.groupType,
+          TPreComputes,
+          U,
+        })
+      );
+      const newComment = await prisma.comment.create({
+        data: {
+          prop: {
+            connect: {
+              num: Number(publicSignatureData.eip712Value.propId),
+            },
+          },
+          commentMsg,
+          ipfsProof: `https://${HOST}/ipfs/${cid}`,
+        },
+      });
+      res.status(200).json(newComment);
     }
   } catch (ex: unknown) {
+    console.error(ex);
     res.status(400).send("something went wrong!");
   }
 }
