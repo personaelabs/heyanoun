@@ -4,23 +4,19 @@ import { useAccount, useSignTypedData } from "wagmi";
 import { PointPreComputes } from "../types/zk";
 import {
   leafDataToAddress,
-  eip712MsgHash,
   splitToRegisters,
   EIP712Value,
 } from "../utils/utils";
 import AnonPill, { NounSet } from "./anonPill";
 import { ethers } from "ethers";
-import { SECP256K1_N } from "../utils/config";
-import BN from "bn.js";
-import { getPointPreComputes } from "../utils/wasmPrecompute";
+import { getSigPublicSignals } from "../utils/wasmPrecompute/wasmPrecompute.web";
+import { PublicSignatureData } from "../utils/wasmPrecompute/wasmPrecompute.common";
 import { downloadZKey } from "../utils/zkp";
 import localforage from "localforage";
-import { GroupPayload } from "../types/api";
 import axios from "axios";
 import { Textarea } from "./textarea";
 import { toUtf8Bytes } from "ethers/lib/utils";
-const elliptic = require("elliptic");
-const ec = new elliptic.ec("secp256k1");
+import { GroupPayload } from "../types/api";
 
 interface CommentWriterProps {
   propId: number;
@@ -80,43 +76,31 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
     async onSuccess(data, variables) {
       // Verify signature when sign message succeeds
       const { v, r, s } = ethers.utils.splitSignature(data);
-      const isYOdd = (BigInt(v) - BigInt(27)) % BigInt(2);
-      const rPoint = ec.keyFromPublic(
-        ec.curve.pointFromX(new BN(r.substring(2), 16), isYOdd).encode("hex"),
-        "hex"
-      );
-      // Get the group element: -(m * r^−1 * G)
-      const rInv = new BN(r.substring(2), 16).invm(SECP256K1_N);
+      const isRYOdd = Number((BigInt(v) - BigInt(27)) % BigInt(2));
 
-      // w = -(r^-1 * msg)
-      const w = rInv
-        .mul(
-          new BN(eip712MsgHash(variables.value as EIP712Value).substring(2), 16)
-        )
-        .neg()
-        .umod(SECP256K1_N);
-      // U = -(w * G) = -(r^-1 * msg * G)
-      const U = ec.curve.g.mul(w);
-
-      // T = r^-1 * R
-      const T = rPoint.getPublic().mul(rInv);
-
-      const TPreComputes = await getPointPreComputes(T.encode("hex"));
-      const signatureArtifacts: SignaturePostProcessingContents = {
-        TPreComputes,
-        s: splitToRegisters(s.substring(2)) as bigint[],
-        U: [
-          splitToRegisters(U.x) as bigint[],
-          splitToRegisters(U.y) as bigint[],
-        ],
+      const publicSigData = {
+        r,
+        isRYOdd,
+        eip712Value: variables.value as EIP712Value,
       };
-      await generateProof(signatureArtifacts);
+      const { TPreComputes, U } = await getSigPublicSignals(publicSigData);
+
+      const signatureArtifacts: SignaturePostProcessingContents = {
+        // @ts-ignore
+        TPreComputes,
+        U,
+        s: splitToRegisters(s.substring(2)) as bigint[],
+      };
+      await generateProof(signatureArtifacts, publicSigData);
     },
   });
 
   const generateProof = React.useCallback(
-    async (artifacts: SignaturePostProcessingContents) => {
-      if (!merkleTreeProofData.current) {
+    async (
+      artifacts: SignaturePostProcessingContents,
+      publicSigData: PublicSignatureData
+    ) => {
+      if (!merkleTreeProofData.current || !merkleTreeProofData.current.root) {
         throw new Error("Missing merkle tree data");
       }
       //TODO: add loading state or progress bar first time it downloads zkey
@@ -143,14 +127,32 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       worker.postMessage([proofInputs, zkeyFastFile]);
       worker.onmessage = async function (e) {
         const { proof, publicSignals } = e.data;
-        console.log("PROOF SUCCESSFULLY GENERATED: ", proof, publicSignals);
-        // TODO: post to IPFS or store in our db
-        setSuccessProofGen(true);
-        // TODO: add toast showing success
-        setLoadingText(undefined);
+        console.log("PROOF SUCCESSFULLY GENERATED: ", proof);
+
+        if (!merkleTreeProofData.current) {
+          throw new Error("Missing merkle tree data");
+        } else {
+          axios.post(
+            "/api/submit",
+            {
+              proof,
+              publicSignatureData: publicSigData,
+              root: merkleTreeProofData.current.root,
+              commentMsg,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          setSuccessProofGen(true);
+          // TODO: add toast showing success
+          setLoadingText(undefined);
+        }
       };
     },
-    [activeNounSet, propId]
+    [activeNounSet, commentMsg, propId]
   );
 
   const prepareProof = React.useCallback(async () => {

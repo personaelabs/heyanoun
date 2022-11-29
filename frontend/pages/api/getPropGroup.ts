@@ -2,6 +2,10 @@ import { NextApiRequest, NextApiResponse } from "next/types";
 import { ErrorResponse, GroupPayload } from "../../types/api";
 import { prisma } from "../../utils/prisma";
 
+function leafDataToAddress(data: string): string {
+  return "0x" + BigInt(data).toString(16).padStart(40, "0");
+}
+
 export default async function getPropGroup(
   req: NextApiRequest,
   res: NextApiResponse<GroupPayload | ErrorResponse>
