@@ -12,6 +12,7 @@ import {
 import { publicProvider } from "wagmi/providers/public";
 import "@rainbow-me/rainbowkit/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "react-hot-toast";
 
 const { chains, provider, webSocketProvider } = configureChains(
   defaultChains,
@@ -40,6 +41,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <WagmiConfig client={client}>
         <RainbowKitProvider chains={chains}>
           <Component {...pageProps} />
+          <Toaster />
         </RainbowKitProvider>
       </WagmiConfig>
     </QueryClientProvider>
