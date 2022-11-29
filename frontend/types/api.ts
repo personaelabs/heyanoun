@@ -12,3 +12,7 @@ export interface GroupPayload {
   root: string;
   leaves: Leaf[];
 }
+
+export interface PropGroupsPayload {
+  groups: GroupPayload[];
+}

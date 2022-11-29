@@ -1,38 +1,45 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
-import { ErrorResponse, GroupPayload } from "../../types/api";
+import {
+  ErrorResponse,
+  GroupPayload,
+  PropGroupsPayload,
+} from "../../types/api";
 import { prisma } from "../../utils/prisma";
 
 function leafDataToAddress(data: string): string {
   return "0x" + BigInt(data).toString(16).padStart(40, "0");
 }
 
-export default async function getPropGroup(
+export default async function getPropGroups(
   req: NextApiRequest,
-  res: NextApiResponse<GroupPayload | ErrorResponse>
+  res: NextApiResponse<PropGroupsPayload | ErrorResponse>
 ) {
   try {
     const propId = `${req.query.propId}`;
-    const groupType = `${req.query.groupType}`;
-    if (!propId || !groupType) {
+    if (!propId) {
       res.status(404).json({ err: "Missing prop ID or group ID" });
     } else {
-      const group = await prisma.group.findFirst({
+      const groups = await prisma.group.findMany({
         where: {
-          typeId: parseInt(groupType),
           propId: parseInt(propId),
         },
+        // TODO: add group type?
         select: {
           leaves: true,
           id: true,
           root: true,
         },
       });
-      if (!group) {
+      if (groups.length === 0) {
         res
           .status(404)
-          .json({ err: `Could not fetch prop with id: ${propId}` });
+          .json({ err: `Could not find any groups for prop id: ${propId}` });
       } else {
-        res.status(200).json({ root: group.root, leaves: group.leaves });
+        res.status(200).json(
+          groups.map((g: any) => {
+            return { root: g.root, leaves: g.leaves };
+          })
+        );
       }
     }
   } catch (ex: unknown) {

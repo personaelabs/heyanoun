@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAccount, useSignTypedData } from "wagmi";
 import { PointPreComputes } from "../types/zk";
 import {
@@ -16,7 +16,8 @@ import localforage from "localforage";
 import axios from "axios";
 import { Textarea } from "./textarea";
 import { toUtf8Bytes } from "ethers/lib/utils";
-import { GroupPayload } from "../types/api";
+import { GroupPayload, PropGroupsPayload } from "../types/api";
+import { useQuery } from "@tanstack/react-query";
 
 interface CommentWriterProps {
   propId: number;
@@ -49,8 +50,71 @@ const types = {
   ],
 } as const;
 
+const getPropGroups = async () =>
+  (await axios.get<PropGroupsPayload>("/api/getPropGroups")).data;
+
 const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
   const { address, connector, isConnected } = useAccount();
+
+  // TODO: loading based on prop groups?
+  const { isLoading: propGroupsLoading, data: propGroups } =
+    useQuery<PropGroupsPayload>({
+      queryKey: ["groups"],
+      queryFn: getPropGroups,
+      retry: 1,
+      enabled: true,
+      staleTime: 1000,
+    });
+
+  // TODO: memoized group -> {root, path, leaves} for this address
+  const groupToMerkleData = useMemo(() => {
+    let ret = {};
+
+    for (const { root, leaves } of propGroups!.groups) {
+      const leaf = leaves.find(
+        (el) =>
+          address &&
+          leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
+      );
+
+      if (leaf) {
+        ret[leaf.groupType] = {
+          root,
+          pathElements: leaf.pathElements,
+          pathIndices: leaf.pathIndices,
+        };
+      }
+    }
+
+    return ret;
+  }, [propGroups?.groups, address]);
+    // const finalizedPropIds = new Set(
+    //   propIdsPayload?.props.filter((p) => p.finalized).map((p) => p.num)
+    // );
+    // let finalizedPropMetadata: DisplayProp[] = propMetadataPayload?.proposals
+    //   .filter((p: any) => finalizedPropIds.has(Number(p.id)))
+    //   .map((p: any) => {
+    //     // NOTE: may want to extract this out later
+    //     return {
+    //       ...p,
+    //       id: Number(p.id),
+    //       createdBlock: Number(p.createdBlock),
+    //       startBlock: Number(p.startBlock),
+    //       endBlock: Number(p.endBlock),
+    //       executionETA: p.executionETA ? Number(p.executionETA) : null,
+    //       proposalThreshold: Number(p.proposalThreshold),
+    //       quorumVotes: Number(p.quorumVotes),
+    //       title: extractTitle(p.description),
+    //     };
+    //   });
+    // if (finalizedPropMetadata) {
+    //   return finalizedPropMetadata
+    //     .slice(0)
+    //     .sort((a: any, b: any) => b.id - a.id);
+    // } else {
+    //   return [];
+    // }
+  }, [propGroups?.groups, address]);
 
   const merkleTreeProofData = React.useRef<MerkleTreeProofData>();
   const [commentMsg, setCommentMsg] = React.useState<string>("");
@@ -157,29 +221,30 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
 
   const prepareProof = React.useCallback(async () => {
     try {
-      const merkleTreeData = (
-        await axios.get<GroupPayload>("/api/getPropGroup", {
-          params: {
-            propId: propId,
-            groupType: activeNounSet,
-          },
-        })
-      ).data;
-      console.log(merkleTreeData.leaves[0]);
-      const leafData = merkleTreeData.leaves.find(
-        (el) =>
-          address &&
-          leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
-      );
-      if (!leafData) {
-        throw new Error("Could not find user address in selected group");
-      }
+      // TODO: get based on merkle tree data
+      // const merkleTreeData = (
+      //   await axios.get<GroupPayload>("/api/getPropGroup", {
+      //     params: {
+      //       propId: propId,
+      //       groupType: activeNounSet,
+      //     },
+      //   })
+      // ).data;
+      // console.log(merkleTreeData.leaves[0]);
+      // const leafData = merkleTreeData.leaves.find(
+      //   (el) =>
+      //     address &&
+      //     leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
+      // );
+      // if (!leafData) {
+      //   throw new Error("Could not find user address in selected group");
+      // }
 
-      merkleTreeProofData.current = {
-        root: merkleTreeData.root,
-        pathElements: leafData.path,
-        pathIndices: leafData.indices,
-      };
+      // merkleTreeProofData.current = {
+      //   root: merkleTreeData.root,
+      //   pathElements: leafData.path,
+      //   pathIndices: leafData.indices,
+      // };
 
       // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
       //       if you want to test non-noun holding addresses
