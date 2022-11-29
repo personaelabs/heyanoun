@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
+
 import { ErrorResponse, PropsPayload } from "../../types/api";
+import { clientFactory } from "../../utils/twitter";
 
 const puppeteer = require("puppeteer"); // Require Puppeteer module
 
@@ -17,7 +19,7 @@ const Screenshot = async (userComment: string) => {
   // be screenshotted before it's fully loaded. This is a workaround.
   setTimeout(async () => {
     await page.screenshot({
-      path: "./twitter-screenshot.jpeg", // Save the screenshot in current directory
+      path: "./tmp/twit.jpeg", // Save the screenshot in current directory
       type: "jpeg",
       quality: 100, // Set the quality of the screenshot
       width: 600,
@@ -32,10 +34,7 @@ const Screenshot = async (userComment: string) => {
 
 const text = `Presumably whatever code changes are required for private voting
 to be possible on the core nouns contracts can instead be
-implemented on an intermediate contract “above”? Presumably
-whatever code changes are required for private voting to be
-possible on the core nouns contracts can instead be implemented on
-an intermediate contract “above”? Hey theree!.`;
+implemented on an intermediate contract “above”? This is a test screenshot to be able to see how things work!.`;
 
 const request = async (
   _req: NextApiRequest,
@@ -43,7 +42,16 @@ const request = async (
 ) => {
   try {
     await Screenshot(text);
-    res.status(200).json({ data: text });
+
+    const client = clientFactory();
+    const mediaId = await client.v1.uploadMedia("./tmp/twit.jpeg");
+    await client.v2.tweet("", {
+      media: { media_ids: [mediaId] },
+    });
+
+    res
+      .status(200)
+      .json({ status: `Screenshot was generated and posted to twitter!` });
   } catch (ex: unknown) {
     console.error(ex);
     res.status(404).json({ err: "Unexpected error occurred" });
