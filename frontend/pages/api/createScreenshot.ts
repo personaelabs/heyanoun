@@ -3,11 +3,9 @@ import fs from "fs";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { ErrorResponse } from "../../types/api";
 import { clientFactory } from "../../utils/twitter";
-import edgeChromium from "chrome-aws-lambda";
 
 // Importing Puppeteer core as default otherwise
 // it won't function correctly with "launch()"
-import puppeteer from "puppeteer-core";
 
 // You may want to change this if you're developing
 // on a platform different from macOS.
@@ -20,9 +18,6 @@ import puppeteer from "puppeteer-core";
 // Then upload it to twitter
 // Then delete the file from the filesystem
 // Then return a response to the user
-
-const LOCAL_CHROME_EXECUTABLE =
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 
 const constructURL = (comment: string) => {
   console.log("constructing URL:");
@@ -39,38 +34,6 @@ const constructURL = (comment: string) => {
   } else {
     return `https://${process.env.VERCEL_URL}/screenshot?text=${encodedComment}`;
   }
-};
-
-const Screenshot = async (userComment: string) => {
-  const executablePath =
-    (await edgeChromium.executablePath) || LOCAL_CHROME_EXECUTABLE;
-
-  const browser = await puppeteer.launch({
-    executablePath,
-    args: edgeChromium.args,
-    headless: true,
-  }); // Launch a "browser"
-
-  const page = await browser.newPage(); // Open a new page
-  await page.goto(constructURL(userComment)); // Go to the website
-
-  // There's currently a reace condition in the code that causes the page to
-  // be screenshotted before it's fully loaded. This is a workaround.
-  return new Promise((resolve) => {
-    setTimeout(async () => {
-      await page.screenshot({
-        path: "./tmp/twit.jpeg", // Save the screenshot in current directory
-        type: "jpeg",
-        quality: 100, // Set the quality of the screenshot
-      });
-
-      await page.close(); // Close the website
-
-      await browser.close(); // Close the browser
-
-      resolve(null);
-    }, 1000);
-  });
 };
 
 const text = `Hello, world. How are you doing? ${Math.floor(
