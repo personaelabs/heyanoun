@@ -16,7 +16,7 @@ import localforage from "localforage";
 import axios from "axios";
 import { Textarea } from "./textarea";
 import { toUtf8Bytes } from "ethers/lib/utils";
-import { GroupPayload, PropGroupsPayload } from "../types/api";
+import { PropGroupsPayload } from "../types/api";
 import { useQuery } from "@tanstack/react-query";
 
 interface CommentWriterProps {
@@ -57,12 +57,6 @@ const getPropGroups = async (propId: number) =>
     })
   ).data;
 
-interface MerkleData {
-  root: string;
-  pathIndices: string[];
-  pathElements: string[];
-}
-
 const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
   const { address, connector, isConnected } = useAccount();
 
@@ -77,31 +71,31 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       staleTime: 1000,
     });
 
-  const groupToMerkleData: { [key: string]: MerkleData } = useMemo(() => {
-    let ret: { [key: string]: MerkleData } = {};
-    if (propGroups) {
-      for (const { root, leaves, type } of propGroups) {
-        const leaf = leaves.find(
-          (el: { data: string }) =>
-            address &&
-            leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
-        );
+  const groupTypeToMerkleTreeProofData: { [key: string]: MerkleTreeProofData } =
+    useMemo(() => {
+      let ret: { [key: string]: MerkleTreeProofData } = {};
+      if (propGroups) {
+        for (const { root, leaves, type } of propGroups) {
+          const leaf = leaves.find(
+            (el: { data: string }) =>
+              address &&
+              leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
+          );
 
-        if (leaf) {
-          ret[type] = {
-            root,
-            pathElements: leaf.pathElements,
-            pathIndices: leaf.pathIndices,
-          };
+          if (leaf) {
+            ret[type] = {
+              root,
+              pathElements: leaf.path,
+              pathIndices: leaf.indices,
+            };
+          }
         }
-      }
-      console.log(ret);
 
-      return ret;
-    } else {
-      return {};
-    }
-  }, [propGroups, address]);
+        return ret;
+      } else {
+        return {};
+      }
+    }, [propGroups, address]);
 
   const merkleTreeProofData = React.useRef<MerkleTreeProofData>();
   const [commentMsg, setCommentMsg] = React.useState<string>("");
@@ -208,30 +202,8 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
 
   const prepareProof = React.useCallback(async () => {
     try {
-      // TODO: get based on merkle tree data
-      // const merkleTreeData = (
-      //   await axios.get<GroupPayload>("/api/getPropGroup", {
-      //     params: {
-      //       propId: propId,
-      //       groupType: activeNounSet,
-      //     },
-      //   })
-      // ).data;
-      // console.log(merkleTreeData.leaves[0]);
-      // const leafData = merkleTreeData.leaves.find(
-      //   (el) =>
-      //     address &&
-      //     leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
-      // );
-      // if (!leafData) {
-      //   throw new Error("Could not find user address in selected group");
-      // }
-
-      // merkleTreeProofData.current = {
-      //   root: merkleTreeData.root,
-      //   pathElements: leafData.path,
-      //   pathIndices: leafData.indices,
-      // };
+      merkleTreeProofData.current =
+        groupTypeToMerkleTreeProofData[nounSetToDbType(activeNounSet)];
 
       // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
       //       if you want to test non-noun holding addresses
@@ -242,18 +214,11 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       //     "0x199D5ED7F45F4eE35960cF22EAde2076e95B253F",
       //   ]
       // );
-
       // const merkleTreeData = prepareMerkleRootProof(
       //   pathElements,
       //   pathIndices,
       //   pathRoot
       // );
-
-      // merkleTreeProofData.current = {
-      //   root: merkleTreeData.root,
-      //   pathElements: merkleTreeData.pathElements,
-      //   pathIndices: merkleTreeData.pathIndices,
-      // };
 
       // triggers callback which will call generateProof when it's done
       signTypedData();
@@ -277,7 +242,8 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
           <span className="text-base text-gray-800 font-semibold mr-2">
             Post As
           </span>
-          {nounSetToDbType(NounSet.Nounder) in groupToMerkleData && (
+          {nounSetToDbType(NounSet.Nounder) in
+            groupTypeToMerkleTreeProofData && (
             <div
               onClick={() => {
                 setActiveNounSet(NounSet.Nounder);
@@ -290,7 +256,8 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
             </div>
           )}
 
-          {nounSetToDbType(NounSet.SingleNoun) in groupToMerkleData && (
+          {nounSetToDbType(NounSet.SingleNoun) in
+            groupTypeToMerkleTreeProofData && (
             <div
               onClick={() => {
                 setActiveNounSet(NounSet.SingleNoun);
@@ -303,7 +270,8 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
             </div>
           )}
 
-          {nounSetToDbType(NounSet.ManyNouns) in groupToMerkleData && (
+          {nounSetToDbType(NounSet.ManyNouns) in
+            groupTypeToMerkleTreeProofData && (
             <div
               onClick={() => {
                 setActiveNounSet(NounSet.ManyNouns);
