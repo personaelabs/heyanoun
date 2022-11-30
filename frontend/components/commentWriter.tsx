@@ -119,7 +119,9 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       publicSigData: PublicSignatureData
     ) => {
       if (!merkleTreeProofData.current || !merkleTreeProofData.current.root) {
-        toast.error("Error occurred generating proof, please try again");
+        toast.error("Error occurred generating proof, please try again", {
+          position: "bottom-right",
+        });
         console.error("Missing merkle tree data");
         return;
       }
@@ -233,7 +235,9 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       signTypedData();
     } catch (ex: unknown) {
       console.error(ex);
-      toast.error("Unexpected error occurred, please try again");
+      toast.error("Unexpected error occurred, please try again", {
+        position: "bottom-right",
+      });
     }
   }, [activeNounSet, address, propId, signTypedData]);
 
