@@ -60,8 +60,6 @@ const getPropGroups = async (propId: number) =>
 const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
   const { address, connector, isConnected } = useAccount();
 
-  // TODO: loading based on prop groups? i.e. make the comment div visible
-  // only when propsGroupLoading is done
   const { isLoading: propGroupsLoading, data: propGroups } =
     useQuery<PropGroupsPayload>({
       queryKey: [],

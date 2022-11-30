@@ -8,7 +8,6 @@ function leafDataToAddress(data: string): string {
   return "0x" + BigInt(data).toString(16).padStart(40, "0");
 }
 
-// TODO: add nounders!
 export default async function getPropGroups(
   req: NextApiRequest,
   res: NextApiResponse<PropGroupsPayload | ErrorResponse>
