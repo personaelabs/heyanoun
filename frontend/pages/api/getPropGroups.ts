@@ -32,11 +32,11 @@ export default async function getPropGroups(
           .status(404)
           .json({ err: `Could not find any groups for prop id: ${propId}` });
       } else {
-        res.status(200).json(
-          groups.map((g: any) => {
+        res.status(200).json({
+          groups: groups.map((g: any) => {
             return { root: g.root, leaves: g.leaves, type: g.type.name };
-          })
-        );
+          }),
+        });
       }
     }
   } catch (ex: unknown) {

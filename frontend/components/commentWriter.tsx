@@ -64,7 +64,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
   // only when propsGroupLoading is done
   const { isLoading: propGroupsLoading, data: propGroups } =
     useQuery<PropGroupsPayload>({
-      queryKey: ["groups"],
+      queryKey: [],
       queryFn: () => getPropGroups(propId),
       retry: 1,
       enabled: true,
@@ -75,7 +75,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
     useMemo(() => {
       let ret: { [key: string]: MerkleTreeProofData } = {};
       if (propGroups) {
-        for (const { root, leaves, type } of propGroups) {
+        for (const { root, leaves, type } of propGroups.groups) {
           const leaf = leaves.find(
             (el: { data: string }) =>
               address &&
