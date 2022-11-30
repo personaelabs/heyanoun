@@ -1,4 +1,5 @@
 import { buildPoseidon } from "circomlibjs";
+import { GroupPayload, LeafPayload } from "../types/api";
 
 let poseidon: any;
 let F: any;
@@ -25,7 +26,33 @@ export async function createMerkleTree(
   };
 }
 
-// TODO: method for creating entire merkle tree...
+// NOTE: definite redundancies with above method
+export async function buildGroupPayload(
+  addresses: string[],
+  type: string
+): Promise<GroupPayload> {
+  const sanitizedLeaves = addresses.map((el) => el.toLocaleLowerCase());
+
+  poseidon = await buildPoseidon();
+  F = poseidon.F;
+
+  const tree = buildTreePoseidon(sanitizedLeaves);
+  const leaves: LeafPayload[] = [];
+
+  for (const leaf in tree.leafToPathElements) {
+    leaves.push({
+      data: leaf.toString(),
+      path: tree.leafToPathElements[leaf].map((i: any) => i.toString()),
+      indices: tree.leafToPathIndices[leaf].map((i: any) => i.toString()),
+    });
+  }
+
+  return {
+    root: tree.root.toString(),
+    leaves,
+    type,
+  };
+}
 
 function buildTreePoseidon(
   leaves: any[],

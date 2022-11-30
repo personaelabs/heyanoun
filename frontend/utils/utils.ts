@@ -1,7 +1,7 @@
 import { _TypedDataEncoder } from "ethers/lib/utils";
 import { GroupPayload, LeafPayload } from "../types/api";
 import { REGISTERS } from "./config";
-import { createMerkleTree } from "./merkleTree";
+import { buildGroupPayload, createMerkleTree } from "./merkleTree";
 
 import { Leaf } from "@prisma/client";
 
@@ -97,33 +97,8 @@ export const nounderAddresses = [
   "0x88f9e324801320a3fc22c8d045a98ad32a490d8e",
   "0xb1c41c71d36cedea7ddcd5f8d5c5c32ba8f3cbfc",
   "0xe26d78c6bff297bbc2da3f80fea9a42028a4260f",
-
-  // TODO: remove!
-  "0x141b63D93DaF55bfb7F396eEe6114F3A5d4A90B2",
 ];
 
 export async function buildNoundersGroupPayload(): Promise<GroupPayload> {
-  console.log("here 1");
-  let root = "";
-  let leaves: LeafPayload[] = [];
-  for (const address of nounderAddresses) {
-    const { pathElements, pathIndices, pathRoot } = await createMerkleTree(
-      address,
-      nounderAddresses
-    );
-    leaves.push({
-      data: address,
-      path: pathElements.map((p: any) => p.toString()),
-      indices: pathIndices.map((p: any) => p.toString()),
-    });
-    root = pathRoot.toString();
-  }
-
-  console.log("here 2");
-
-  return {
-    root,
-    leaves,
-    type: "nounders",
-  };
+  return await buildGroupPayload(nounderAddresses, "nounders");
 }
