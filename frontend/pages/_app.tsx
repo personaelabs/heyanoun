@@ -9,16 +9,14 @@ import {
   chain,
   defaultChains,
 } from "wagmi";
-import { publicProvider } from "wagmi/providers/public";
+import { infuraProvider } from "wagmi/providers/infura";
+
 import "@rainbow-me/rainbowkit/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const { chains, provider, webSocketProvider } = configureChains(
-  defaultChains,
-  //TODO: replace with our own alchemy or infura link
-  //alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_ID})
-  [publicProvider()]
-);
+const { chains, provider, webSocketProvider } = configureChains(defaultChains, [
+  infuraProvider({ apiKey: process.env.CLIENT_INFURA_PROJECT_ID }),
+]);
 
 const { connectors } = getDefaultWallets({
   appName: "My RainbowKit App",
