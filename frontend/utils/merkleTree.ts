@@ -25,6 +25,8 @@ export async function createMerkleTree(
   };
 }
 
+// TODO: method for creating entire merkle tree...
+
 function buildTreePoseidon(
   leaves: any[],
   depth = 15,

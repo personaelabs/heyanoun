@@ -8,9 +8,15 @@ export interface ErrorResponse {
   err: string;
 }
 
+export interface LeafPayload {
+  data: string;
+  path: string[];
+  indices: string[];
+}
+
 export interface GroupPayload {
   root: string;
-  leaves: Leaf[];
+  leaves: LeafPayload[];
   type: string; // type.name in db
 }
 

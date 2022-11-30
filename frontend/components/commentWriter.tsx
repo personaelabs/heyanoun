@@ -16,7 +16,7 @@ import localforage from "localforage";
 import axios from "axios";
 import { Textarea } from "./textarea";
 import { toUtf8Bytes } from "ethers/lib/utils";
-import { PropGroupsPayload } from "../types/api";
+import { LeafPayload, PropGroupsPayload } from "../types/api";
 import { useQuery } from "@tanstack/react-query";
 
 interface CommentWriterProps {
@@ -77,7 +77,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       if (propGroups) {
         for (const { root, leaves, type } of propGroups.groups) {
           const leaf = leaves.find(
-            (el: { data: string }) =>
+            (el: LeafPayload) =>
               address &&
               leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
           );

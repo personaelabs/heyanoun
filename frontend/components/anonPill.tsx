@@ -9,7 +9,7 @@ export enum NounSet {
 export const nounSetToDbType = (nounSet: NounSet): string => {
   switch (nounSet) {
     case NounSet.Nounder:
-      return "nounder";
+      return "nounders";
     case NounSet.SingleNoun:
       return "1-noun";
     case NounSet.ManyNouns:
