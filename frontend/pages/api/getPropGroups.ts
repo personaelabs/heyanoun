@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { ErrorResponse, PropGroupsPayload } from "../../types/api";
+import { noundersGroupPayload } from "../../utils/nounders";
+// import { noundersGroupPayload } from "../../utils/nounders";
 import { prisma } from "../../utils/prisma";
-import { buildNoundersGroupPayload } from "../../utils/utils";
 
 function leafDataToAddress(data: string): string {
   return "0x" + BigInt(data).toString(16).padStart(40, "0");
@@ -36,8 +37,7 @@ export default async function getPropGroups(
         const groups = dbGroups.map((g: any) => {
           return { root: g.root, leaves: g.leaves, type: g.type.name };
         });
-
-        groups.push(await buildNoundersGroupPayload());
+        groups.push(noundersGroupPayload);
 
         res.status(200).json({
           groups,
