@@ -1,5 +1,6 @@
-import { NextApiRequest, NextApiResponse } from "next/types";
+import fs from "fs";
 
+import { NextApiRequest, NextApiResponse } from "next/types";
 import { ErrorResponse } from "../../types/api";
 import { clientFactory } from "../../utils/twitter";
 import edgeChromium from "chrome-aws-lambda";
@@ -12,6 +13,14 @@ import puppeteer from "puppeteer-core";
 // on a platform different from macOS.
 // See https://github.com/vercel/og-image for a more resilient
 // system-agnostic options for Puppeteeer.
+
+// Get a screenshot of the page using the API from https://screenshot-coral.vercel.app/api?url=${}&width=1280&height=720
+// Fetch a screenshot from the API programmatically and save the file to the filesystem
+//
+// Then upload it to twitter
+// Then delete the file from the filesystem
+// Then return a response to the user
+
 const LOCAL_CHROME_EXECUTABLE =
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 
@@ -64,23 +73,32 @@ const Screenshot = async (userComment: string) => {
   });
 };
 
-const text = `Presumably whatever code changes are required for private voting
-to be possible on the core nouns contracts can instead be
-implemented on an intermediate contract “above”? This is a test screenshot to be able to see how things work!
-Hi, it's sal. I think?`;
+const text = `Hello, world. How are you doing? ${Math.floor(
+  Math.random() * 1000000 + 1
+)}`;
 
 const request = async (
   _req: NextApiRequest,
   res: NextApiResponse<{} | ErrorResponse>
 ) => {
   try {
-    await Screenshot(text);
+    // await Screenshot(text);
 
-    // const client = clientFactory();
-    // const mediaId = await client.v1.uploadMedia("./tmp/twit.jpeg");
-    // await client.v2.tweet("", {
-    //   media: { media_ids: [mediaId] },
-    // });
+    const response = await fetch(
+      `https://screenshot-coral.vercel.app/api?url=${constructURL(
+        text
+      )}&width=1280&height=720`
+    );
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const outputFileName = `tmp/twit.png`;
+    await fs.createWriteStream(outputFileName).write(buffer);
+
+    const client = clientFactory();
+    const mediaId = await client.v1.uploadMedia("./tmp/twit.png");
+    await client.v2.tweet("", {
+      media: { media_ids: [mediaId] },
+    });
 
     res
       .status(200)
