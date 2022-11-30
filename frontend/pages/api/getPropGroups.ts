@@ -1,9 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { ErrorResponse, PropGroupsPayload } from "../../types/api";
-import {
-  noundersGroupPayload,
-  noundersGroupPayloadTest,
-} from "../../utils/nounders";
+import { noundersGroupPayload } from "../../utils/nounders";
 // import { noundersGroupPayload } from "../../utils/nounders";
 import { prisma } from "../../utils/prisma";
 
