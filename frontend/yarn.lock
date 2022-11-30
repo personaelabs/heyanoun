@@ -4002,6 +4002,11 @@ jayson@^3.4.4:
     uuid "^8.3.2"
     ws "^7.4.5"
 
+jpeg-js@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/jpeg-js/-/jpeg-js-0.1.2.tgz#135b992c0575c985cfa0f494a3227ed238583ece"
+  integrity sha512-CiRVjMKBUp6VYtGwzRjrdnro41yMwKGOWdP9ATXqmixdz2n7KHNwdqthTYSSbOKj/Ha79Gct1sA8ZQpse55TYA==
+
 js-sdsl@^4.1.4:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/js-sdsl/-/js-sdsl-4.2.0.tgz#278e98b7bea589b8baaf048c20aeb19eb7ad09d0"
@@ -4876,6 +4881,20 @@ pify@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/pify/-/pify-5.0.0.tgz#1f5eca3f5e87ebec28cc6d54a0e4aaf00acc127f"
   integrity sha512-eW/gHNMlxdSP6dmG6uJip6FXN0EQBwm2clYYd8Wul42Cwu/DK8HEftzsapcNdYe2MfLiIwZqsDk2RDEsTE79hA==
+
+png-js@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/png-js/-/png-js-0.1.1.tgz#1cc7c212303acabe74263ec3ac78009580242d93"
+  integrity sha512-NTtk2SyfjBm+xYl2/VZJBhFnTQ4kU5qWC7VC4/iGbrgiU4FuB4xC+74erxADYJIqZICOR1HCvRA7EBHkpjTg9g==
+
+png-to-jpeg@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/png-to-jpeg/-/png-to-jpeg-1.0.1.tgz#14362c6aaaec5ea6b52fa3504f5ecc760b4e7424"
+  integrity sha512-3M0hMY84ocnH3pKu+i4GYo5x7OaQPhudCKYjCUxiykh9/wQM1GZOmlsRifxzINeZREIsIBjD2tYt1KsAdgnSkg==
+  dependencies:
+    jpeg-js "^0.1.2"
+    pify "^2.3.0"
+    png-js "^0.1.1"
 
 pngjs@^3.3.0:
   version "3.4.0"
