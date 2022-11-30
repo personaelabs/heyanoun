@@ -11,6 +11,7 @@ export interface ErrorResponse {
 export interface GroupPayload {
   root: string;
   leaves: Leaf[];
+  type: string; // type.name in db
 }
 
 export interface PropGroupsPayload {

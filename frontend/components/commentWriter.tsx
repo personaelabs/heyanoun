@@ -7,7 +7,7 @@ import {
   splitToRegisters,
   EIP712Value,
 } from "../utils/utils";
-import AnonPill, { NounSet } from "./anonPill";
+import AnonPill, { NounSet, nounSetToDbType } from "./anonPill";
 import { ethers } from "ethers";
 import { getSigPublicSignals } from "../utils/wasmPrecompute/wasmPrecompute.web";
 import { PublicSignatureData } from "../utils/wasmPrecompute/wasmPrecompute.common";
@@ -50,71 +50,58 @@ const types = {
   ],
 } as const;
 
-const getPropGroups = async () =>
-  (await axios.get<PropGroupsPayload>("/api/getPropGroups")).data;
+const getPropGroups = async (propId: number) =>
+  (
+    await axios.get<PropGroupsPayload>("/api/getPropGroups", {
+      params: { propId },
+    })
+  ).data;
+
+interface MerkleData {
+  root: string;
+  pathIndices: string[];
+  pathElements: string[];
+}
 
 const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
   const { address, connector, isConnected } = useAccount();
 
-  // TODO: loading based on prop groups?
+  // TODO: loading based on prop groups? i.e. make the comment div visible
+  // only when propsGroupLoading is done
   const { isLoading: propGroupsLoading, data: propGroups } =
     useQuery<PropGroupsPayload>({
       queryKey: ["groups"],
-      queryFn: getPropGroups,
+      queryFn: () => getPropGroups(propId),
       retry: 1,
       enabled: true,
       staleTime: 1000,
     });
 
-  // TODO: memoized group -> {root, path, leaves} for this address
-  const groupToMerkleData = useMemo(() => {
-    let ret = {};
+  const groupToMerkleData: { [key: string]: MerkleData } = useMemo(() => {
+    let ret: { [key: string]: MerkleData } = {};
+    if (propGroups) {
+      for (const { root, leaves, type } of propGroups) {
+        const leaf = leaves.find(
+          (el: { data: string }) =>
+            address &&
+            leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
+        );
 
-    for (const { root, leaves } of propGroups!.groups) {
-      const leaf = leaves.find(
-        (el) =>
-          address &&
-          leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
-      );
-
-      if (leaf) {
-        ret[leaf.groupType] = {
-          root,
-          pathElements: leaf.pathElements,
-          pathIndices: leaf.pathIndices,
-        };
+        if (leaf) {
+          ret[type] = {
+            root,
+            pathElements: leaf.pathElements,
+            pathIndices: leaf.pathIndices,
+          };
+        }
       }
-    }
+      console.log(ret);
 
-    return ret;
-  }, [propGroups?.groups, address]);
-    // const finalizedPropIds = new Set(
-    //   propIdsPayload?.props.filter((p) => p.finalized).map((p) => p.num)
-    // );
-    // let finalizedPropMetadata: DisplayProp[] = propMetadataPayload?.proposals
-    //   .filter((p: any) => finalizedPropIds.has(Number(p.id)))
-    //   .map((p: any) => {
-    //     // NOTE: may want to extract this out later
-    //     return {
-    //       ...p,
-    //       id: Number(p.id),
-    //       createdBlock: Number(p.createdBlock),
-    //       startBlock: Number(p.startBlock),
-    //       endBlock: Number(p.endBlock),
-    //       executionETA: p.executionETA ? Number(p.executionETA) : null,
-    //       proposalThreshold: Number(p.proposalThreshold),
-    //       quorumVotes: Number(p.quorumVotes),
-    //       title: extractTitle(p.description),
-    //     };
-    //   });
-    // if (finalizedPropMetadata) {
-    //   return finalizedPropMetadata
-    //     .slice(0)
-    //     .sort((a: any, b: any) => b.id - a.id);
-    // } else {
-    //   return [];
-    // }
-  }, [propGroups?.groups, address]);
+      return ret;
+    } else {
+      return {};
+    }
+  }, [propGroups, address]);
 
   const merkleTreeProofData = React.useRef<MerkleTreeProofData>();
   const [commentMsg, setCommentMsg] = React.useState<string>("");
@@ -290,36 +277,44 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
           <span className="text-base text-gray-800 font-semibold mr-2">
             Post As
           </span>
-          <div
-            onClick={() => {
-              setActiveNounSet(NounSet.Nounder);
-            }}
-          >
-            <AnonPill
-              nounSet={NounSet.Nounder}
-              isActive={activeNounSet === NounSet.Nounder}
-            />
-          </div>
-          <div
-            onClick={() => {
-              setActiveNounSet(NounSet.SingleNoun);
-            }}
-          >
-            <AnonPill
-              nounSet={NounSet.SingleNoun}
-              isActive={activeNounSet === NounSet.SingleNoun}
-            />
-          </div>
-          <div
-            onClick={() => {
-              setActiveNounSet(NounSet.ManyNouns);
-            }}
-          >
-            <AnonPill
-              nounSet={NounSet.ManyNouns}
-              isActive={activeNounSet === NounSet.ManyNouns}
-            />
-          </div>
+          {nounSetToDbType(NounSet.Nounder) in groupToMerkleData && (
+            <div
+              onClick={() => {
+                setActiveNounSet(NounSet.Nounder);
+              }}
+            >
+              <AnonPill
+                nounSet={NounSet.Nounder}
+                isActive={activeNounSet === NounSet.Nounder}
+              />
+            </div>
+          )}
+
+          {nounSetToDbType(NounSet.SingleNoun) in groupToMerkleData && (
+            <div
+              onClick={() => {
+                setActiveNounSet(NounSet.SingleNoun);
+              }}
+            >
+              <AnonPill
+                nounSet={NounSet.SingleNoun}
+                isActive={activeNounSet === NounSet.SingleNoun}
+              />
+            </div>
+          )}
+
+          {nounSetToDbType(NounSet.ManyNouns) in groupToMerkleData && (
+            <div
+              onClick={() => {
+                setActiveNounSet(NounSet.ManyNouns);
+              }}
+            >
+              <AnonPill
+                nounSet={NounSet.ManyNouns}
+                isActive={activeNounSet === NounSet.ManyNouns}
+              />
+            </div>
+          )}
         </div>
         <div></div>
       </div>

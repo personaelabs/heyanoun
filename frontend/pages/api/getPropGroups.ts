@@ -1,9 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
-import {
-  ErrorResponse,
-  GroupPayload,
-  PropGroupsPayload,
-} from "../../types/api";
+import { ErrorResponse, PropGroupsPayload } from "../../types/api";
 import { prisma } from "../../utils/prisma";
 
 function leafDataToAddress(data: string): string {
@@ -19,15 +15,16 @@ export default async function getPropGroups(
     if (!propId) {
       res.status(404).json({ err: "Missing prop ID or group ID" });
     } else {
+      console.log(propId);
       const groups = await prisma.group.findMany({
         where: {
           propId: parseInt(propId),
         },
-        // TODO: add group type?
         select: {
           leaves: true,
           id: true,
           root: true,
+          type: true,
         },
       });
       if (groups.length === 0) {
@@ -37,7 +34,7 @@ export default async function getPropGroups(
       } else {
         res.status(200).json(
           groups.map((g: any) => {
-            return { root: g.root, leaves: g.leaves };
+            return { root: g.root, leaves: g.leaves, type: g.type.name };
           })
         );
       }

@@ -6,6 +6,17 @@ export enum NounSet {
   ManyNouns,
 }
 
+export const nounSetToDbType = (nounSet: NounSet): string => {
+  switch (nounSet) {
+    case NounSet.Nounder:
+      return "nounder";
+    case NounSet.SingleNoun:
+      return "1-noun";
+    case NounSet.ManyNouns:
+      return "2-noun";
+  }
+};
+
 interface IAnonPill {
   isActive?: boolean;
   nounSet: NounSet;
