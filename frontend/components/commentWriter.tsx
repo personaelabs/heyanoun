@@ -211,23 +211,22 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
 
   const prepareProof = React.useCallback(async () => {
     try {
-    
       if (!address) {
         toast.error("Please connect your wallet before trying to post!", {
           position: "bottom-right",
         });
         return;
-      } 
+      }
 
       merkleTreeProofData.current =
         groupTypeToMerkleTreeProofData[nounSetToDbType(activeNounSet)];
-      
+
       if (!address) {
         toast.error("Please connect your wallet before trying to post!", {
           position: "bottom-right",
         });
         return;
-      } 
+      }
 
       // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
       //       if you want to test non-noun holding addresses
@@ -254,13 +253,18 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
     }
   }, [activeNounSet, groupTypeToMerkleTreeProofData, signTypedData]);
 
+  const canPost = React.useMemo(
+    () => Object.keys(groupTypeToMerkleTreeProofData).length !== 0,
+    [groupTypeToMerkleTreeProofData]
+  );
+
   return (
     <div className="max-w-xl mx-auto">
       {propGroupsLoading || groupTypeToMerkleTreeProofData === undefined ? (
         <div className="bg-gray-100 border border-gray-300 p-12 py-24 rounded-md flex justify-center text-gray-800">
           <p>loading props...</p>
         </div>
-      ) : (
+      ) : canPost ? (
         <div>
           <div className="bg-white rounded-md shadow-sm border border-gray-200 overflow-clip">
             <div className="py-2 px-0">
@@ -328,7 +332,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
             </button>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 };
