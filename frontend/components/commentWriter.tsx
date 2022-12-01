@@ -17,6 +17,7 @@ import axios from "axios";
 import { Textarea } from "./textarea";
 import { toUtf8Bytes } from "ethers/lib/utils";
 import { GroupPayload } from "../types/api";
+import toast from "react-hot-toast";
 
 interface CommentWriterProps {
   propId: number;
@@ -101,7 +102,11 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       publicSigData: PublicSignatureData
     ) => {
       if (!merkleTreeProofData.current || !merkleTreeProofData.current.root) {
-        throw new Error("Missing merkle tree data");
+        toast.error("Error occurred generating proof, please try again", {
+          position: "bottom-right",
+        });
+        console.error("Missing merkle tree data");
+        return;
       }
       //TODO: add loading state or progress bar first time it downloads zkey
       await downloadZKey();
@@ -146,6 +151,10 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
               },
             }
           );
+          toast.success("Proof submitted successfully!", {
+            position: "bottom-right",
+          });
+          // TODO: post to IPFS or store in our db
           setSuccessProofGen(true);
           // TODO: add toast showing success
           setLoadingText(undefined);
@@ -171,8 +180,19 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
           address &&
           leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
       );
-      if (!leafData) {
-        throw new Error("Could not find user address in selected group");
+      if (!address) {
+        toast.error("Please connect your wallet before trying to post!", {
+          position: "bottom-right",
+        });
+        return;
+      } else if (!leafData) {
+        toast.error(
+          "Error generating proof, this address is not a member of this group!",
+          {
+            position: "bottom-right",
+          }
+        );
+        return;
       }
 
       merkleTreeProofData.current = {
@@ -206,8 +226,10 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       // triggers callback which will call generateProof when it's done
       signTypedData();
     } catch (ex: unknown) {
-      // TODO: cleaner error handling
-      throw ex;
+      console.error(ex);
+      toast.error("Unexpected error occurred, please try again", {
+        position: "bottom-right",
+      });
     }
   }, [activeNounSet, address, propId, signTypedData]);
 

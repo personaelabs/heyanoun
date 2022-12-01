@@ -36,7 +36,14 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
 
   let timeRemainingEN;
   let isPast;
+  let isDefeated = false;
   if (currentBlockNumber) {
+    // The graphQL query returns a DEFEATED props as ACTIVE, so have to do
+    // this check here to derive the defaeted state.
+    if (currentBlockNumber > prop.endBlock && prop.status === "ACTIVE") {
+      isDefeated = true;
+    }
+
     const timeRemaining = calcTimeUntilFutureBlock(
       currentBlockNumber,
       prop.endBlock
@@ -58,13 +65,15 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
 
       <div
         onClick={openModal}
-        className="rounded-md transition-all shadow-sm bg-white p-5 flex items-center justify-between border border-gray-200 hover:border-gray-300 hover:cursor-pointer"
+        className="rounded-md transition-all shadow-sm bg-white p-3 md:p-5 flex items-center justify-between border border-gray-200 hover:border-gray-300 hover:cursor-pointer"
       >
         <div className="flex items-center text-gray-800">
-          <div className="text-lg font-semibold">{prop.id}</div>
-          <h4 className="text-xl font-semibold ml-4">{prop.title}</h4>
+          <div className="text-base md:text-lg font-semibold">{prop.id}</div>
+          <h4 className="text-lg md:text-xl font-semibold ml-3 md:ml-4">
+            {prop.title}
+          </h4>
         </div>
-        <div className="space-x-2">
+        <div className="space-x-0 md:space-x-2 space-y-2 md:space-y-0">
           {!isPast && currentBlockNumber !== undefined && (
             <span className="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-0.5 text-sm font-medium text-gray-800">
               {timeRemainingEN}
@@ -75,7 +84,7 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
               Pending
             </span>
           )}
-          {prop.status === "ACTIVE" && (
+          {prop.status === "ACTIVE" && !isDefeated && (
             <span className="inline-flex items-center rounded-md bg-green-100 px-2.5 py-0.5 text-sm font-medium text-green-800">
               Active
             </span>
@@ -90,9 +99,14 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
               Executed
             </span>
           )}
-          {prop.status === "DEFEATED" && (
+          {isDefeated && (
             <span className="inline-flex items-center rounded-md bg-red-100 px-2.5 py-0.5 text-sm font-medium text-red-800">
               Defeated
+            </span>
+          )}
+          {prop.status === "VETOED" && (
+            <span className="inline-flex items-center rounded-md bg-red-100 px-2.5 py-0.5 text-sm font-medium text-red-800">
+              Vetoed
             </span>
           )}
           {prop.status === "CANCELLED" && (

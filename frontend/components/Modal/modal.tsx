@@ -1,4 +1,3 @@
-import { useRef } from "react";
 import { Dialog } from "@headlessui/react";
 import ReactMarkdown from "react-markdown";
 import styles from "./Modal.module.css";
@@ -44,12 +43,7 @@ const Modal: React.FC<IModalProps> = ({
   // const cleanedDescription = description.slice(startVal);
 
   return (
-    <Dialog
-      open={isOpen}
-      initialFocus={completeButtonRef}
-      onClose={handleClose}
-      className="relative z-50"
-    >
+    <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
       {/* The backdrop, rendered as a fixed sibling to the panel container */}
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
@@ -58,7 +52,7 @@ const Modal: React.FC<IModalProps> = ({
         <div className="flex min-h-full items-center justify-center">
           <Dialog.Panel className="w-full max-w-5xl bg-white ">
             <div className="">
-              <div className="px-12 py-10">
+              <div className="px-4 py-3 md:px-12 md:py-10">
                 <ReactMarkdown className={styles.markdown}>
                   {description}
                 </ReactMarkdown>
