@@ -1,5 +1,10 @@
 import { _TypedDataEncoder } from "ethers/lib/utils";
+import { GroupPayload, LeafPayload } from "../types/api";
 import { REGISTERS } from "./config";
+import { buildGroupPayload, createMerkleTree } from "./merkleTree";
+
+import { Leaf } from "@prisma/client";
+import { nounderAddresses } from "./nounders";
 
 const addHexPrefix = (str: string) => `0x${str}`;
 
@@ -82,3 +87,11 @@ export function eip712MsgHash(value: EIP712Value) {
 export function leafDataToAddress(data: string): string {
   return "0x" + BigInt(data).toString(16).padStart(40, "0");
 }
+
+// export async function buildNoundersGroupPayload(): Promise<GroupPayload> {
+//   let noundersPayload = await buildGroupPayload(nounderAddresses, "nounders");
+//   let json = JSON.stringify(noundersPayload, null, 2);
+//   // TODO: store this in json somewhere for now
+//   console.log(json);
+//   return noundersPayload;
+// }
