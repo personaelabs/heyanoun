@@ -16,8 +16,11 @@ import localforage from "localforage";
 import axios from "axios";
 import { Textarea } from "./textarea";
 import { toUtf8Bytes } from "ethers/lib/utils";
+
 import { LeafPayload, PropGroupsPayload } from "../types/api";
 import { useQuery } from "@tanstack/react-query";
+
+import toast from "react-hot-toast";
 
 interface CommentWriterProps {
   propId: number;
@@ -144,7 +147,11 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       publicSigData: PublicSignatureData
     ) => {
       if (!merkleTreeProofData.current || !merkleTreeProofData.current.root) {
-        throw new Error("Missing merkle tree data");
+        toast.error("Error occurred generating proof, please try again", {
+          position: "bottom-right",
+        });
+        console.error("Missing merkle tree data");
+        return;
       }
       //TODO: add loading state or progress bar first time it downloads zkey
       await downloadZKey();
@@ -189,6 +196,10 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
               },
             }
           );
+          toast.success("Proof submitted successfully!", {
+            position: "bottom-right",
+          });
+          // TODO: post to IPFS or store in our db
           setSuccessProofGen(true);
           // TODO: add toast showing success
           setLoadingText(undefined);
@@ -200,8 +211,23 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
 
   const prepareProof = React.useCallback(async () => {
     try {
+    
+      if (!address) {
+        toast.error("Please connect your wallet before trying to post!", {
+          position: "bottom-right",
+        });
+        return;
+      } 
+
       merkleTreeProofData.current =
         groupTypeToMerkleTreeProofData[nounSetToDbType(activeNounSet)];
+      
+      if (!address) {
+        toast.error("Please connect your wallet before trying to post!", {
+          position: "bottom-right",
+        });
+        return;
+      } 
 
       // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
       //       if you want to test non-noun holding addresses
@@ -221,8 +247,10 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       // triggers callback which will call generateProof when it's done
       signTypedData();
     } catch (ex: unknown) {
-      // TODO: cleaner error handling
-      throw ex;
+      console.error(ex);
+      toast.error("Unexpected error occurred, please try again", {
+        position: "bottom-right",
+      });
     }
   }, [activeNounSet, groupTypeToMerkleTreeProofData, signTypedData]);
 
