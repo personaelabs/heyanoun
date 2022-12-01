@@ -6,6 +6,7 @@ import CommentWriter from "../commentWriter";
 import { PropCommentsPayload } from "../../types/api";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
+import { useRef } from "react";
 
 interface IModalProps {
   isOpen: boolean;
