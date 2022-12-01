@@ -262,7 +262,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
     <div className="max-w-xl mx-auto">
       {propGroupsLoading || groupTypeToMerkleTreeProofData === undefined ? (
         <div className="bg-gray-100 border border-gray-300 p-12 py-24 rounded-md flex justify-center text-gray-800">
-          <p>loading props...</p>
+          <p>loading...</p>
         </div>
       ) : canPost ? (
         <div>
