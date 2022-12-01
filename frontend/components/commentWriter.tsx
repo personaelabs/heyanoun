@@ -221,13 +221,6 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       merkleTreeProofData.current =
         groupTypeToMerkleTreeProofData[nounSetToDbType(activeNounSet)];
 
-      if (!address) {
-        toast.error("Please connect your wallet before trying to post!", {
-          position: "bottom-right",
-        });
-        return;
-      }
-
       // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
       //       if you want to test non-noun holding addresses
       // const { pathElements, pathIndices, pathRoot } = await createMerkleTree(

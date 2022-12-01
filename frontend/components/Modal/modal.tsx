@@ -61,7 +61,7 @@ const Modal: React.FC<IModalProps> = ({
               <div className="bg-gray-50 border-t border-gray-200 py-8 pb-16 space-y-4">
                 {isLoading || !data ? (
                   <p>loading...</p>
-                ) : (
+                ) : data.comments.length !== 0 ? (
                   data.comments.map((comment) => (
                     <CommentView
                       key={comment.id}
@@ -71,6 +71,10 @@ const Modal: React.FC<IModalProps> = ({
                       proof={comment.ipfsProof}
                     />
                   ))
+                ) : (
+                  <div className="py-1 px-2 flex row items-center justify-center">
+                    <p className="text-l">No comments yet!</p>
+                  </div>
                 )}
                 <CommentWriter propId={propId} />
               </div>
