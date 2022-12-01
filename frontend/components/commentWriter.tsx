@@ -21,6 +21,7 @@ import { LeafPayload, PropGroupsPayload } from "../types/api";
 import { useQuery } from "@tanstack/react-query";
 
 import toast from "react-hot-toast";
+import { ClipLoader } from "react-spinners";
 
 interface CommentWriterProps {
   propId: number;
@@ -63,14 +64,17 @@ const getPropGroups = async (propId: number) =>
 const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
   const { address, connector, isConnected } = useAccount();
 
-  const { isLoading: propGroupsLoading, data: propGroups } =
-    useQuery<PropGroupsPayload>({
-      queryKey: ["groups"],
-      queryFn: () => getPropGroups(propId),
-      retry: 1,
-      enabled: true,
-      staleTime: 1000,
-    });
+  const {
+    isLoading: propGroupsLoading,
+    data: propGroups,
+    refetch,
+  } = useQuery<PropGroupsPayload>({
+    queryKey: ["groups"],
+    queryFn: () => getPropGroups(propId),
+    retry: 1,
+    enabled: true,
+    staleTime: 1000,
+  });
 
   const groupTypeToMerkleTreeProofData: { [key: string]: MerkleTreeProofData } =
     useMemo(() => {
@@ -139,6 +143,10 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       };
       await generateProof(signatureArtifacts, publicSigData);
     },
+    onError(error) {
+      setLoadingText(undefined);
+      toast.error("Error signing message");
+    },
   });
 
   const generateProof = React.useCallback(
@@ -150,6 +158,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
         toast.error("Error occurred generating proof, please try again", {
           position: "bottom-right",
         });
+        setLoadingText(undefined);
         console.error("Missing merkle tree data");
         return;
       }
@@ -196,9 +205,11 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
               },
             }
           );
+
           toast.success("Proof submitted successfully!", {
             position: "bottom-right",
           });
+          refetch();
           // TODO: post to IPFS or store in our db
           setSuccessProofGen(true);
           // TODO: add toast showing success
@@ -206,15 +217,17 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
         }
       };
     },
-    [activeNounSet, commentMsg, propId]
+    [activeNounSet, commentMsg, propId, refetch]
   );
 
   const prepareProof = React.useCallback(async () => {
     try {
+      setLoadingText("Generating proof...");
       if (!address) {
         toast.error("Please connect your wallet before trying to post!", {
           position: "bottom-right",
         });
+        setLoadingText(undefined);
         return;
       }
 
@@ -246,6 +259,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       // triggers callback which will call generateProof when it's done
       signTypedData();
     } catch (ex: unknown) {
+      setLoadingText(undefined);
       console.error(ex);
       toast.error("Unexpected error occurred, please try again", {
         position: "bottom-right",
@@ -253,16 +267,14 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
     }
   }, [activeNounSet, groupTypeToMerkleTreeProofData, signTypedData]);
 
-  const canPost = React.useMemo(
-    () => Object.keys(groupTypeToMerkleTreeProofData).length !== 0,
-    [groupTypeToMerkleTreeProofData]
-  );
+  const canPost = true;
 
+  console.log(loadingText);
   return (
     <div className="max-w-xl mx-auto">
       {propGroupsLoading || groupTypeToMerkleTreeProofData === undefined ? (
         <div className="bg-gray-100 border border-gray-300 p-12 py-24 rounded-md flex justify-center text-gray-800">
-          <p>loading...</p>
+          <ClipLoader color="hsla(168, 9%, 52%, 1)" />
         </div>
       ) : canPost ? (
         <div>
@@ -328,7 +340,11 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
               onClick={prepareProof}
               className="bg-black transition-all hover:bg-slate-900 hover:scale-105 active:scale-100 text-white font-semibold rounded-md px-4 py-2 mt-4"
             >
-              Post Anonymously
+              {loadingText ? (
+                <ClipLoader size={20} color="hsla(168, 9%, 52%, 1)" />
+              ) : (
+                "Post Anonymously"
+              )}
             </button>
           </div>
         </div>
