@@ -251,7 +251,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
         position: "bottom-right",
       });
     }
-  }, [activeNounSet, groupTypeToMerkleTreeProofData, signTypedData]);
+  }, [activeNounSet, address, groupTypeToMerkleTreeProofData, signTypedData]);
 
   const canPost = React.useMemo(
     () => Object.keys(groupTypeToMerkleTreeProofData).length !== 0,
