@@ -9,6 +9,7 @@ import ProposalRow from "../components/proposalRow";
 import { extractTitle, getSubgraphProps } from "../utils/graphql";
 // import { ProofComment } from "../components/generateProof";
 import { useBlockNumber } from "wagmi";
+import { ClipLoader } from "react-spinners";
 
 const getDbProps = async () =>
   (await axios.get<PropsPayload>("/api/getProps")).data;
@@ -124,7 +125,7 @@ const Home: NextPage = () => {
               propMetadataLoading ||
               propsReverseOrder == undefined ? (
                 <div className="bg-gray-100 border border-gray-300 p-12 py-24 rounded-md flex justify-center text-gray-800">
-                  <p>loading props...</p>
+                  <ClipLoader color="hsla(168, 9%, 52%, 1)" />
                 </div>
               ) : (
                 <div className="space-y-3 md:space-y-4">

@@ -7,6 +7,7 @@ import { PropCommentsPayload } from "../../types/api";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import { useRef } from "react";
+import { ClipLoader } from "react-spinners";
 
 interface IModalProps {
   isOpen: boolean;
@@ -60,8 +61,8 @@ const Modal: React.FC<IModalProps> = ({
               </div>
               <div className="bg-gray-50 border-t border-gray-200 py-8 pb-16 space-y-4">
                 {isLoading || !data ? (
-                  <p>loading...</p>
-                ) : data.comments.length !== 0 ? (
+                  <ClipLoader color="hsla(168, 9%, 52%, 1)" />
+                ) : (
                   data.comments.map((comment) => (
                     <CommentView
                       key={comment.id}
