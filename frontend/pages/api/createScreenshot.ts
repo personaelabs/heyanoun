@@ -1,9 +1,7 @@
-import fs from "fs";
-
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { ErrorResponse } from "../../types/api";
 import { clientFactory } from "../../utils/twitter";
-const pngToJpeg = require("png-to-jpeg");
+import { EUploadMimeType } from "twitter-api-v2";
 
 const constructURL = (comment: string) => {
   const encodedComment = encodeURI(comment);
@@ -37,28 +35,21 @@ const request = async (
       )}&width=1280&height=720`
     );
 
-    console.log("response received");
+    const client = clientFactory();
     const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    console.log("conerting png to jpeg");
-    const output = await pngToJpeg({ quality: 90 })(buffer);
-    console.log("writing to file");
-    await fs.createWriteStream(`tmp/twit.jpeg`).write(output);
-    console.log("writing to file COMPLETE");
+    const pngBuffer = Buffer.from(arrayBuffer);
 
-    setTimeout(async () => {
-      const client = clientFactory();
-      const mediaId = await client.v1.uploadMedia("tmp/twit.jpeg");
+    const mediaId = await client.v1.uploadMedia(pngBuffer, {
+      mimeType: EUploadMimeType.Png,
+    });
 
-      console.log("Posting Tweet!");
-      await client.v2.tweet("", {
-        media: { media_ids: [mediaId] },
-      });
-      console.log("Tweet Posted!");
-      return res
-        .status(200)
-        .json({ status: `Screenshot was generated and posted to twitter!` });
-    }, 500);
+    await client.v2.tweet("", {
+      media: { media_ids: [mediaId] },
+    });
+
+    return res
+      .status(200)
+      .json({ status: `Screenshot was generated and posted to twitter!` });
   } catch (ex: unknown) {
     console.error(ex);
     res.status(404).json({ err: "Unexpected error occurred" });
