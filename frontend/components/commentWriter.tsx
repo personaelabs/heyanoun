@@ -72,7 +72,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
   const groupTypeToMerkleTreeProofData: { [key: string]: MerkleTreeProofData } =
     useMemo(() => {
       let ret: { [key: string]: MerkleTreeProofData } = {};
-      if (propGroups?.groups) {
+      if (propGroups) {
         for (const { root, leaves, type } of propGroups.groups) {
           const leaf = leaves.find(
             (el: LeafPayload) =>
