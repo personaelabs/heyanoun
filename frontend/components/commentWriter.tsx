@@ -260,7 +260,10 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
     }
   }, [activeNounSet, address, groupTypeToMerkleTreeProofData, signTypedData]);
 
-  const canPost = true;
+  const canPost = React.useMemo(
+    () => Object.keys(groupTypeToMerkleTreeProofData).length !== 0,
+    [groupTypeToMerkleTreeProofData]
+  );
 
   console.log(loadingText);
   return (
