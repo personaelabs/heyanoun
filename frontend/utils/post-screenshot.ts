@@ -25,8 +25,6 @@ export const postScreenshot = async ({ text, nounSet }: IScreeshotParams) => {
     nounSet
   )}&width=1280&height=720`;
 
-  console.log({ screenshotURL });
-
   const response = await fetch(screenshotURL);
 
   console.log("\n");

@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getSigPublicSignals } from "../../utils/wasmPrecompute/wasmPrecompute.nodejs";
 import { PublicSignatureData } from "../../utils/wasmPrecompute/wasmPrecompute.common";
+import { postScreenshot } from "../../utils/post-screenshot";
 
 import { prisma } from "../../utils/prisma";
 
@@ -100,6 +101,8 @@ export default async function submit(
           ipfsProof: `https://${HOST}/ipfs/${cid}`,
         },
       });
+
+      await postScreenshot({ text: commentMsg, nounSet: "Nounder" });
       res.status(200).json(newComment);
     }
   } catch (ex: unknown) {
