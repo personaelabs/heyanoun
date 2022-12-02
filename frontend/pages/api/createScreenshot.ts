@@ -11,7 +11,7 @@ const request = async (
       text: `Testing a new comment with randomly generated number: ${Math.floor(
         Math.random() * 10000000 + 1
       )}`,
-      nounSet: "Nounder",
+      nounSet: "ManyNouns",
     });
     return res
       .status(200)

@@ -5,7 +5,7 @@ const constructURL = (comment: string, nounSet: string) => {
   const encodedComment = encodeURI(comment);
 
   if (process.env.NODE_ENV === "development") {
-    return `https://nouns150-krarq7uwa-personaelabs.vercel.app/screenshot?text=${encodedComment}&nounSet=${nounSet}`;
+    return `https://nouns150-74q3wuvrk-personaelabs.vercel.app/screenshot?text=${encodedComment}&nounSet=${nounSet}`;
   } else {
     return `https://${process.env.VERCEL_URL}/screenshot?text=${encodedComment}&nounSet=${nounSet}`;
   }
