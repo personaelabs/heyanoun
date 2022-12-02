@@ -4,7 +4,16 @@ import { useRouter } from "next/router";
 const Screenshot: NextPage = () => {
   const router = useRouter();
 
-  const { text } = router.query;
+  const { text, nounSet } = router.query;
+
+  let imgURL = "noun-holder-large.png";
+  if (nounSet === "Nounder") {
+    imgURL = "/nounder-large.png";
+  }
+  if (nounSet === "ManyNouns") {
+    imgURL = "/2nouns-large.png";
+  }
+
   return (
     <div>
       <div className="square w-[1280px] h-[720px] border-solid border-[25px] border-[#d63d5e]">
@@ -19,7 +28,7 @@ const Screenshot: NextPage = () => {
             <span className="text-[#d63d5e] text-4xl font-sans font-semibold">
               Nouns DAO Member
             </span>
-            <img className="max-w-[300px]" src="/2nouns-large.png" />
+            <img className="max-w-[300px]" src={imgURL} />
           </div>
         </div>
       </div>

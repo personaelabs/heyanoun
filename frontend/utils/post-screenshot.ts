@@ -1,25 +1,32 @@
 import { EUploadMimeType } from "twitter-api-v2";
 import { clientFactory } from "./twitter";
 
-const constructURL = (comment: string) => {
+const constructURL = (comment: string, nounSet: string) => {
   const encodedComment = encodeURI(comment);
 
   if (process.env.NODE_ENV === "development") {
-    return `https://nouns150-krarq7uwa-personaelabs.vercel.app/screenshot?text=${encodedComment}`;
+    return `https://nouns150-krarq7uwa-personaelabs.vercel.app/screenshot?text=${encodedComment}&nounSet=${nounSet}`;
   } else {
-    return `https://${process.env.VERCEL_URL}/screenshot?text=${encodedComment}`;
+    return `https://${process.env.VERCEL_URL}/screenshot?text=${encodedComment}&nounSet=${nounSet}`;
   }
 };
 
-export const postScreenshot = async (
-  text = `This is a comment with a randomly generated number: ${Math.floor(
-    Math.random() * 10000000 + 1
-  )}`
-) => {
+interface IScreeshotParams {
+  text: string;
+  nounSet: "Nounder" | "SingleNoun" | "ManyNouns";
+}
+
+export const postScreenshot = async ({ text, nounSet }: IScreeshotParams) => {
+  console.log(constructURL(text, nounSet));
+
   console.log(`requesting screenshot for ${text}`);
   const screenshotURL = `https://screenshot-coral.vercel.app/api?url=${constructURL(
-    text
+    text,
+    nounSet
   )}&width=1280&height=720`;
+
+  console.log({ screenshotURL });
+
   const response = await fetch(screenshotURL);
 
   console.log("\n");
