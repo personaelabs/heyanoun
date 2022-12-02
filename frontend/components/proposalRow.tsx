@@ -4,6 +4,8 @@ import en from "javascript-time-ago/locale/en";
 
 import Modal from "./Modal/modal";
 import { DisplayProp } from "../pages/index";
+import { useAccount } from "wagmi";
+import toast from "react-hot-toast";
 
 TimeAgo.addDefaultLocale(en);
 const timeAgo = new TimeAgo("en-us");
@@ -29,8 +31,14 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
   currentBlockNumber,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { address } = useAccount();
 
   const openModal = () => {
+    if (!address) {
+      toast.error("Please connect your wallet before trying to post!", {
+        position: "bottom-right",
+      });
+    }
     setIsOpen(true);
   };
 
