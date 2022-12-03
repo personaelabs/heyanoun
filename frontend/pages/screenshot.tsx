@@ -28,7 +28,7 @@ const Screenshot: NextPage = () => {
             <span className="text-[#d63d5e] text-4xl font-sans font-semibold">
               Nouns DAO Member
             </span>
-            {/* <img className="max-w-[300px]" src={imgURL} /> */}
+            <img className="max-w-[300px]" src={imgURL} />
           </div>
         </div>
       </div>
