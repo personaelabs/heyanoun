@@ -103,10 +103,10 @@ export default async function submit(
         },
       });
 
-      const nounSetStr = NounSet[
-        Number(publicSignatureData.eip712Value.groupType)
-      ] as "Nounder" | "SingleNoun" | "ManyNouns";
-      await postScreenshot({ text: commentMsg, nounSet: nounSetStr });
+      const nounSet = Number(
+        publicSignatureData.eip712Value.groupType
+      ) as NounSet;
+      await postScreenshot({ text: commentMsg, nounSet });
       res.status(200).json(newComment);
     }
   } catch (ex: unknown) {

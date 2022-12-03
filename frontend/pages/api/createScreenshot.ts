@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
+import { NounSet } from "../../components/anonPill";
 import { ErrorResponse } from "../../types/api";
 import { postScreenshot } from "../../utils/post-screenshot";
 
@@ -11,7 +12,7 @@ const request = async (
       text: `Testing a new comment with randomly generated number: ${Math.floor(
         Math.random() * 10000000 + 1
       )}`,
-      nounSet: "ManyNouns",
+      nounSet: NounSet.ManyNouns,
     });
     return res
       .status(200)
