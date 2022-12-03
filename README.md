@@ -2,6 +2,10 @@
 
 [Nouns Prop 150](https://nouns.wtf/vote/150)
 
+
+https://user-images.githubusercontent.com/7995105/205459542-56030f3f-0e67-4d83-9630-9cd599b3b3cd.mov
+
+
 ### Intro
 
 [Nouns](https://nouns.wtf/) is currently **one of the most active and interesting online communities with a powerful brand and significant resources** (at the time of writing this, a treasury of 28,942 ETH or ~ $30,000,000) that Nouns NFT holders can vote on how to allocate via [NounsDAO](https://nouns.wtf/vote). Nouners can choose to submit new proposals (justifying why a particular endeavor or project should be allocated capital to support Nouns) that Nouners can then democratically vote on. If a proposal passes a threshold of voters in support of it, it gets executed. For example, [Prop 173](https://nouns.wtf/vote/173) proposal was executed to host a Nouns sailing marketing campaign and afterparty at NFT NYC, a crypto conference that happens once a year or [Prop 150](https://nouns.wtf/vote/150) which funded building this project!
@@ -20,7 +24,8 @@ We built heyanoun to allow more nouners to express what they believe while manta
 
 Snapshotted here refers to whether you satisfy the predicate above at the time of the proposal (i.e. if you buy a Noun NFT after prop x, you will not be able to comment on props before x).
 
-(picture with posting)
+
+
 
 ### What do we mean by credible pseudonymous messages?
 
@@ -36,9 +41,16 @@ To generate our zkSNARK proofs, we have a [cron job](https://github.com/personae
 When users want to post a message about a particular prop, they
 
 1. connect their wallet
+
+![Screen Shot 2022-12-03 at 2 15 1](https://user-images.githubusercontent.com/7995105/205459920-3c8a8275-b31f-4eef-aa3a-1d89d38f7b00.png)
+
 2. navigate to the particular prop on [heyanoun](https://www.heyanoun.xyz/) and click on it
+
+![Screen Shot 2022-12-03 at 3 07 1](https://user-images.githubusercontent.com/7995105/205459929-3235ec1c-10e2-426b-9fc2-79267d5a4412.png)
+
 3. scroll to the bottom of the modal, if their address satisfies any of the predicates, they will be displayed a textbox with buttons corresponding to different group types they can post their message as. Note if an address is not an owner of any Noun NFT, the textbox will not be displayed, but they will still be able to view all posted comments.
-   (image)
+
+https://user-images.githubusercontent.com/7995105/205459727-301b9ce9-6a86-4e7b-a98c-41e4be527390.mp4
 
 ### zkSNARK Circuit Construction
 
