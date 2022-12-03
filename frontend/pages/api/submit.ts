@@ -9,6 +9,7 @@ import vkey from "../../utils/verification_key.json";
 import _ from "lodash";
 import { HOST, postToIpfs } from "../../utils/ipfs";
 import { JSONStringifyCustom } from "../../utils/utils";
+import { NounSet } from "../../components/anonPill";
 
 const snarkjs = require("snarkjs");
 
@@ -102,7 +103,10 @@ export default async function submit(
         },
       });
 
-      await postScreenshot({ text: commentMsg, nounSet: "Nounder" });
+      const nounSetStr = NounSet[
+        Number(publicSignatureData.eip712Value.groupType)
+      ] as "Nounder" | "SingleNoun" | "ManyNouns";
+      await postScreenshot({ text: commentMsg, nounSet: nounSetStr });
       res.status(200).json(newComment);
     }
   } catch (ex: unknown) {
@@ -110,12 +114,3 @@ export default async function submit(
     res.status(400).send("something went wrong!");
   }
 }
-// steps:
-// - verify root matches groupType + propId - DONE
-// - compute TPreComputes and U (sig) - DONE
-// - get vkey - DONE
-// - verify proof + public signals (also effectively verifies sig!) - DONE
-// - add to db / ipfs - TODO
-// - post to twitter - TODO
-
-// TODO: potentially link tweet URL, ipfs hash, etc. in json
