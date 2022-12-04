@@ -17,7 +17,10 @@ interface IScreeshotParams {
   nounSet: NounSet;
 }
 
-export const postScreenshot = async ({ text, nounSet }: IScreeshotParams) => {
+export const postScreenshot = async (
+  { text, nounSet }: IScreeshotParams,
+  proofIPFS: string
+) => {
   const nounSetStr = NounSet[nounSet];
   console.log(constructURL(text, nounSetStr));
 
@@ -41,7 +44,7 @@ export const postScreenshot = async ({ text, nounSet }: IScreeshotParams) => {
     mimeType: EUploadMimeType.Png,
   });
 
-  await client.v2.tweet(``, {
+  await client.v2.tweet(`proof: ${proofIPFS}`, {
     media: { media_ids: [mediaId] },
   });
 };
