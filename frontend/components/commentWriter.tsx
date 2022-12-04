@@ -297,6 +297,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
                   <AnonPill
                     nounSet={NounSet.Nounder}
                     isActive={activeNounSet === NounSet.Nounder}
+                    proofURL="#"
                   />
                 </div>
               )}
@@ -311,6 +312,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
                   <AnonPill
                     nounSet={NounSet.SingleNoun}
                     isActive={activeNounSet === NounSet.SingleNoun}
+                    proofURL="#"
                   />
                 </div>
               )}
@@ -325,6 +327,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
                   <AnonPill
                     nounSet={NounSet.ManyNouns}
                     isActive={activeNounSet === NounSet.ManyNouns}
+                    proofURL="#"
                   />
                 </div>
               )}
