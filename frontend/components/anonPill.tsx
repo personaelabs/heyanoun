@@ -20,11 +20,13 @@ export const nounSetToDbType = (nounSet: NounSet): string => {
 interface IAnonPill {
   isActive?: boolean;
   nounSet: NounSet;
+  proofURL: string;
 }
 
 const AnonPill: React.FC<IAnonPill> = ({
   isActive = true,
   nounSet = NounSet.ManyNouns,
+  proofURL = "#",
 }) => {
   let nounSVGPath;
   let tagName;
