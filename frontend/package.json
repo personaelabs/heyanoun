@@ -22,6 +22,7 @@
     "dayjs": "^1.11.6",
     "elliptic": "^6.5.4",
     "ethers": "^5.7.2",
+    "framer-motion": "^7.6.18",
     "graphql": "16.6.0",
     "graphql-request": "5.0.0",
     "ipfs-http-client": "^59.0.0",

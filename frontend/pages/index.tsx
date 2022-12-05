@@ -7,9 +7,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import ProposalRow from "../components/proposalRow";
 import { extractTitle, getSubgraphProps } from "../utils/graphql";
-// import { ProofComment } from "../components/generateProof";
+import { motion } from "framer-motion";
 import { useBlockNumber } from "wagmi";
-import { ClipLoader } from "react-spinners";
+import { ProposalRowLoading } from "../components/proposalRowLoading";
 
 const getDbProps = async () =>
   (await axios.get<PropsPayload>("/api/getProps")).data;
@@ -102,13 +102,23 @@ const Home: NextPage = () => {
             </nav>
             <div className="max-w-7xl mx-auto pt-12 pb-8 px-4 sm:px-6 lg:px-8">
               <div className="text-center md:text-center max-w-2xl mx-auto">
-                <h1 className="text-3xl md:text-5xl text-white font-bold leading-[40px] md:leading-14">
+                <motion.h1
+                  initial={{ y: -12, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-3xl md:text-5xl text-white font-bold leading-[40px] md:leading-14"
+                >
                   Give Feedback On Proposals Anonymously
-                </h1>
-                <p className="mt-4 text-lg md:text-xl font-normal md:leading-8 text-white">
+                </motion.h1>
+                <motion.p
+                  initial={{ y: -12, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.3, delay: 0.1 }}
+                  className="mt-4 text-lg md:text-xl font-normal md:leading-8 text-white"
+                >
                   Anoun allows noun-holders to give feedback on proposals while
                   maintaining their privacy using zero-knowledge proofs.{" "}
-                </p>
+                </motion.p>
               </div>
             </div>
           </div>
@@ -124,9 +134,7 @@ const Home: NextPage = () => {
               {propIdsLoading ||
               propMetadataLoading ||
               propsReverseOrder == undefined ? (
-                <div className="bg-gray-100 border border-gray-300 p-12 py-24 rounded-md flex justify-center text-gray-800">
-                  <ClipLoader color="hsla(168, 9%, 52%, 1)" />
-                </div>
+                <ProposalRowLoading count={12} />
               ) : (
                 <div className="space-y-3 md:space-y-4">
                   {propsReverseOrder &&
