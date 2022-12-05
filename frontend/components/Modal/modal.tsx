@@ -31,8 +31,6 @@ const Modal: React.FC<IModalProps> = ({
   propId,
   description,
 }) => {
-  let completeButtonRef = useRef(null);
-
   const { isLoading, data } = useQuery<PropCommentsPayload>({
     queryKey: [`${propId}_comments`],
     queryFn: getPropComments(propId),
@@ -40,9 +38,6 @@ const Modal: React.FC<IModalProps> = ({
     enabled: isOpen,
     staleTime: 1000,
   });
-
-  // const startVal = description.indexOf("\n\n") + 2;
-  // const cleanedDescription = description.slice(startVal);
 
   return (
     <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
