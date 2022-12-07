@@ -37,7 +37,7 @@ const CommentView: React.FC<ICommentViewProps> = ({
           {/* <Image width={32} height={32} src="/public/nouns.png" alt="" /> */}
           <img
             className="inline-block h-8 w-8 rounded-full"
-            src="/punk-4156.jpeg"
+            src="/placeholder.png"
             alt=""
           />
           <p className="text-gray-800 font-semibold">Anonymous Noun Holder</p>
