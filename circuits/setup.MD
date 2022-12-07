@@ -13,9 +13,13 @@ The participants (in order) were:
 5. will price
 6. jacob horne
 
-After round-robin-ing contributions, we added randomness from the Eth block closest after 12 AM UTC the day after the last contribution 
+After round-robin-ing contributions, we added randomness from the Eth block closest after 12 AM UTC [the day after the last contribution](https://etherscan.io/block/16132686).
 
-(TODO: add more documentation abt this blockhash once this is done).
+The command run for adding the final randomness was:
+
+```
+snarkjs zkey beacon jacob.zkey final.zkey eea84db9b6e4d9d08241c8463eaa553445fd5e6af54ffaa89ec0d910ca989f58 10
+```
 
 ## artifacts
 
