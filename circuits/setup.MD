@@ -1,5 +1,3 @@
-This directory stores information about heyanoun's phase 2 trusted setup.
-
 ## ceremony
 
 The setup ceremony was carried out asynchronously the week of 11/28/22.
