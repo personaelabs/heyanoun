@@ -21,12 +21,14 @@ interface IAnonPill {
   isActive?: boolean;
   nounSet: NounSet;
   proofURL: string;
+  isClickable?: boolean;
 }
 
 const AnonPill: React.FC<IAnonPill> = ({
   isActive = true,
   nounSet = NounSet.ManyNouns,
   proofURL = "#",
+  isClickable = false,
 }) => {
   let nounSVGPath;
   let tagName;
@@ -49,7 +51,7 @@ const AnonPill: React.FC<IAnonPill> = ({
 
   return (
     <a
-      target="_blank"
+      target={isClickable ? "_blank" : "_self"}
       rel="noreferrer"
       href={proofURL}
       className={classnames(

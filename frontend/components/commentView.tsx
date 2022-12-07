@@ -43,7 +43,7 @@ const CommentView: React.FC<ICommentViewProps> = ({
           <p className="text-gray-800 font-semibold">Anonymous Noun Holder</p>
           <p className="text-gray-500 font-normal">{dateFromDescription}</p>
         </div>
-        <AnonPill proofURL={proof} nounSet={groupTypeToNounSet} />
+        <AnonPill proofURL={proof} nounSet={groupTypeToNounSet} isClickable />
       </div>
       <p className="mt-3">{message}</p>
     </div>

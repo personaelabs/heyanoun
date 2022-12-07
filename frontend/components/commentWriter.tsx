@@ -298,6 +298,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
                     nounSet={NounSet.Nounder}
                     isActive={activeNounSet === NounSet.Nounder}
                     proofURL="#"
+                    isClickable={false}
                   />
                 </div>
               )}
@@ -313,6 +314,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
                     nounSet={NounSet.SingleNoun}
                     isActive={activeNounSet === NounSet.SingleNoun}
                     proofURL="#"
+                    isClickable={false}
                   />
                 </div>
               )}
@@ -328,6 +330,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
                     nounSet={NounSet.ManyNouns}
                     isActive={activeNounSet === NounSet.ManyNouns}
                     proofURL="#"
+                    isClickable={false}
                   />
                 </div>
               )}
