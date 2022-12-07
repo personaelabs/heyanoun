@@ -20,11 +20,13 @@ export const nounSetToDbType = (nounSet: NounSet): string => {
 interface IAnonPill {
   isActive?: boolean;
   nounSet: NounSet;
+  proofURL: string;
 }
 
 const AnonPill: React.FC<IAnonPill> = ({
   isActive = true,
   nounSet = NounSet.ManyNouns,
+  proofURL = "#",
 }) => {
   let nounSVGPath;
   let tagName;
@@ -46,7 +48,10 @@ const AnonPill: React.FC<IAnonPill> = ({
   }
 
   return (
-    <div
+    <a
+      target="_blank"
+      rel="noreferrer"
+      href={proofURL}
       className={classnames(
         "hover:cursor-pointer border rounded-2xl p-[2px] flex items-center",
         {
@@ -87,7 +92,7 @@ const AnonPill: React.FC<IAnonPill> = ({
       >
         {tagName}
       </div>
-    </div>
+    </a>
   );
 };
 

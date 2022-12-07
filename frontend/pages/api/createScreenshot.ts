@@ -8,12 +8,15 @@ const request = async (
   res: NextApiResponse<{} | ErrorResponse>
 ) => {
   try {
-    await postScreenshot({
-      text: `Testing a new comment with randomly generated number: ${Math.floor(
-        Math.random() * 10000000 + 1
-      )}`,
-      nounSet: NounSet.ManyNouns,
-    });
+    await postScreenshot(
+      {
+        text: `Testing a new comment with randomly generated number: ${Math.floor(
+          Math.random() * 10000000 + 1
+        )}`,
+        nounSet: NounSet.ManyNouns,
+      },
+      "dummy IPFS URL"
+    );
     return res
       .status(200)
       .json({ status: `Screenshot was generated and posted to twitter!` });
