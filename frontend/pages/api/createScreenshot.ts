@@ -15,7 +15,8 @@ const request = async (
         )}`,
         nounSet: NounSet.ManyNouns,
       },
-      "dummy IPFS URL"
+      "dummy IPFS URL",
+      0
     );
     return res
       .status(200)
