@@ -93,11 +93,12 @@ export default async function submit(
       );
 
       const proofIPFS = `https://${HOST}/ipfs/${cid}`;
+      const propId = Number(publicSignatureData.eip712Value.propId);
       const newComment = await prisma.comment.create({
         data: {
           prop: {
             connect: {
-              num: Number(publicSignatureData.eip712Value.propId),
+              num: propId,
             },
           },
           group: {
@@ -113,7 +114,7 @@ export default async function submit(
       const nounSet = Number(
         publicSignatureData.eip712Value.groupType
       ) as NounSet;
-      await postScreenshot({ text: commentMsg, nounSet }, proofIPFS);
+      await postScreenshot({ text: commentMsg, nounSet }, proofIPFS, propId);
       res.status(200).json(newComment);
     }
   } catch (ex: unknown) {
