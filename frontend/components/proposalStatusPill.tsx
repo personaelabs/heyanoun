@@ -30,7 +30,7 @@ const ProposalStatusPill: React.FC<IProposalStatusProps> = ({
   }
 
   return (
-    <span className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-sm font-medium ${getStatusPillColor(status)}`}>
+    <span className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getStatusPillColor(status)}`}>
       {status}
     </span>
   );
