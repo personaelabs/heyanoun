@@ -5,10 +5,14 @@ import en from "javascript-time-ago/locale/en";
 import Modal from "./Modal/modal";
 import { DisplayProp } from "../pages/index";
 import { useAccount } from "wagmi";
+import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import ProposalStatusPill from "./proposalStatusPill";
 import TimeLeftPill from "./timeLeftPill";
 import CommentCount from "./commentCount";
+import { PropCommentsPayload } from "../types/api";
+import axios from "axios";
+import { ClipLoader } from "react-spinners";
 
 TimeAgo.addDefaultLocale(en);
 const timeAgo = new TimeAgo("en-us");
@@ -28,6 +32,15 @@ const calcTimeUntilFutureBlock = (
   const timeInFuture = Date.now() + timeRemainingInSeconds * 1000;
   return timeInFuture;
 };
+
+const getPropComments = (propId: number) => async () =>
+  (
+    await axios.get<PropCommentsPayload>("/api/getPropComments", {
+      params: {
+        propId,
+      },
+    })
+  ).data;
 
 const ProposalRow: React.FC<IProposalRowProps> = ({
   prop,
@@ -62,6 +75,14 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
     timeRemainingEN = timeAgo.format(timeRemaining);
     isPast = new Date(timeRemaining).getTime() < Date.now();
   }
+
+  const { isLoading, data } = useQuery<PropCommentsPayload>({
+    queryKey: [`${prop.id}_comments`],
+    queryFn: getPropComments(prop.id),
+    retry: 1,
+    staleTime: 1000,
+  });
+
   return (
     <>
       <Modal
@@ -89,7 +110,8 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
             {!isPast && currentBlockNumber !== undefined && <TimeLeftPill timeLeft={timeRemainingEN} />}
           </div>
 
-          <CommentCount count={14} />
+          {isLoading || !data ? <ClipLoader color="hsla(168, 9%, 52%, 1)" />
+            : data.comments && <CommentCount count={data.comments.length} />}
         </div>
       </div>
     </>
