@@ -74,7 +74,7 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
       />
       <div
         onClick={openModal}
-        className="rounded-2xl transition-all shadow-sm bg-white p-3 md:px-5 md:py-4  flex flex-col gap-4 justify-between border border-gray-200 hover:border-gray-300 hover:cursor-pointer"
+        className="rounded-2xl transition-all shadow-sm bg-white p-3 md:px-5 md:py-4 flex flex-col gap-4 justify-between border border-gray-200 hover:border-gray-300 hover:cursor-pointer"
       >
 
         <div className="text-lg md:text-xl font-bold self-start line-clamp-2">
