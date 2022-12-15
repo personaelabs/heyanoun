@@ -8,7 +8,7 @@ import { useAccount } from "wagmi";
 import toast from "react-hot-toast";
 import ProposalStatusPill from "./proposalStatusPill";
 import TimeLeftPill from "./timeLeftPill";
-import CommentCountPill from "./commentCountPill";
+import CommentCount from "./commentCount";
 
 TimeAgo.addDefaultLocale(en);
 const timeAgo = new TimeAgo("en-us");
@@ -89,7 +89,7 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
             {!isPast && currentBlockNumber !== undefined && <TimeLeftPill timeLeft={timeRemainingEN} />}
           </div>
 
-          <CommentCountPill count={14} />
+          <CommentCount count={14} />
         </div>
       </div>
     </>
