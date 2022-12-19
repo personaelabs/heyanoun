@@ -123,7 +123,8 @@ const Home: NextPage = () => {
             </div>
           </div>
           <div className="flex justify-center">
-            <img className="w-40" src="nouns.png" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="w-40" src="nouns.png" alt="nouns" />
           </div>
         </div>
 

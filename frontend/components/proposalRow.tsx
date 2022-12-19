@@ -5,7 +5,14 @@ import en from "javascript-time-ago/locale/en";
 import Modal from "./Modal/modal";
 import { DisplayProp } from "../pages/index";
 import { useAccount } from "wagmi";
+import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import ProposalStatusPill from "./proposalStatusPill";
+import TimeLeftPill from "./timeLeftPill";
+import CommentCount from "./commentCount";
+import { PropCommentsPayload } from "../types/api";
+import axios from "axios";
+import { ClipLoader } from "react-spinners";
 
 TimeAgo.addDefaultLocale(en);
 const timeAgo = new TimeAgo("en-us");
@@ -25,6 +32,15 @@ const calcTimeUntilFutureBlock = (
   const timeInFuture = Date.now() + timeRemainingInSeconds * 1000;
   return timeInFuture;
 };
+
+const getPropComments = (propId: number) => async () =>
+  (
+    await axios.get<PropCommentsPayload>("/api/getPropComments", {
+      params: {
+        propId,
+      },
+    })
+  ).data;
 
 const ProposalRow: React.FC<IProposalRowProps> = ({
   prop,
@@ -60,6 +76,13 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
     isPast = new Date(timeRemaining).getTime() < Date.now();
   }
 
+  const { isLoading, data } = useQuery<PropCommentsPayload>({
+    queryKey: [`${prop.id}_comments`],
+    queryFn: getPropComments(prop.id),
+    retry: 1,
+    staleTime: 1000,
+  });
+
   return (
     <>
       <Modal
@@ -70,58 +93,25 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
           setIsOpen(false);
         }}
       />
-
       <div
         onClick={openModal}
-        className="rounded-md transition-all shadow-sm bg-white p-3 md:p-5 flex items-center justify-between border border-gray-200 hover:border-gray-300 hover:cursor-pointer"
+        className="rounded-2xl transition-all shadow-sm bg-white p-3 md:px-5 md:py-4 flex flex-col gap-4 justify-between border border-gray-200 hover:border-gray-300 hover:cursor-pointer"
       >
-        <div className="flex items-center text-gray-800">
-          <div className="text-base md:text-lg font-semibold">{prop.id}</div>
-          <h4 className="text-lg md:text-xl font-semibold ml-3 md:ml-4">
-            {prop.title}
-          </h4>
+
+        <div className="text-lg md:text-xl font-bold self-start line-clamp-2">
+          {prop.id}: <span className="text-black tracking-tight font-normal">{prop.title}</span>
         </div>
-        <div className="space-x-0 md:space-x-2 space-y-2 md:space-y-0">
-          {!isPast && currentBlockNumber !== undefined && (
-            <span className="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-0.5 text-sm font-medium text-gray-800">
-              {timeRemainingEN}
-            </span>
-          )}
-          {prop.status === "PENDING" && (
-            <span className="inline-flex items-center rounded-md bg-orange-100 px-2.5 py-0.5 text-sm font-medium text-orange-800">
-              Pending
-            </span>
-          )}
-          {prop.status === "ACTIVE" && !isDefeated && (
-            <span className="inline-flex items-center rounded-md bg-green-100 px-2.5 py-0.5 text-sm font-medium text-green-800">
-              Active
-            </span>
-          )}
-          {prop.status === "QUEUED" && (
-            <span className="inline-flex items-center rounded-md bg-yellow-100 px-2.5 py-0.5 text-sm font-medium text-yellow-800">
-              Queued
-            </span>
-          )}
-          {prop.status === "EXECUTED" && (
-            <span className="inline-flex items-center rounded-md bg-blue-100 px-2.5 py-0.5 text-sm font-medium text-blue-800">
-              Executed
-            </span>
-          )}
-          {isDefeated && (
-            <span className="inline-flex items-center rounded-md bg-red-100 px-2.5 py-0.5 text-sm font-medium text-red-800">
-              Defeated
-            </span>
-          )}
-          {prop.status === "VETOED" && (
-            <span className="inline-flex items-center rounded-md bg-red-100 px-2.5 py-0.5 text-sm font-medium text-red-800">
-              Vetoed
-            </span>
-          )}
-          {prop.status === "CANCELLED" && (
-            <span className="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-0.5 text-sm font-medium text-gray-800">
-              Cancelled
-            </span>
-          )}
+
+
+        <div className="flex justify-between">
+          <div className="flex gap-2">
+            <ProposalStatusPill status={prop.status} isDefeated={isDefeated} />
+
+            {!isPast && currentBlockNumber !== undefined && <TimeLeftPill timeLeft={timeRemainingEN} />}
+          </div>
+
+          {isLoading || !data ? <ClipLoader color="hsla(168, 9%, 52%, 1)" />
+            : data.comments && <CommentCount count={data.comments.length} />}
         </div>
       </div>
     </>
