@@ -3,6 +3,19 @@ import gql from "graphql-tag";
 
 import { execute } from "../.graphclient";
 
+const curNounsQuery = gql`
+  {
+    nouns {
+      owner {
+        delegate {
+          id
+        }
+        id
+      }
+    }
+  }
+`;
+
 // TODO: future proof against >1000 total props
 function buildPropsQuery() {
   return gql`
@@ -40,4 +53,10 @@ async function executeQuery(query: DocumentNode) {
   return res["data"];
 }
 
-export { buildPropsQuery, buildDelegatesQuery, buildOwnersQuery, executeQuery };
+export {
+  buildPropsQuery,
+  buildDelegatesQuery,
+  buildOwnersQuery,
+  executeQuery,
+  curNounsQuery,
+};
