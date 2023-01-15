@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { MerkleTree } from "./merklePoseidon";
 
 export const prisma = new PrismaClient();
 
@@ -114,6 +115,15 @@ export async function finalizeProp(id: number) {
       finalized: true,
     },
   });
+}
+
+export async function writeTree(tree: MerkleTree, propId, typeId) {
+  console.log(`[prop ${propId} anonSet ${typeId}] - root: ${tree.root}`);
+  console.log(`[prop ${propId} anonSet ${typeId}] - creating group in db`);
+  const group = await createGroup(tree.root.toString(), propId, typeId);
+
+  console.log(`[prop ${propId} anonSet ${typeId}] - creating leaves in db`);
+  await createLeaves(tree.leafToPathElements, tree.leafToPathIndices, group.id);
 }
 
 export async function disconnectDb() {

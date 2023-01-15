@@ -8,13 +8,19 @@ let F;
 // NOTE: picked this as the null field element arbitrarily
 const NULL_NODE = 1n;
 
+export interface MerkleTree {
+  root;
+  leafToPathElements;
+  leafToPathIndices;
+}
+
 // NOTE: default tree depth based on dao hack confessions
 async function buildTreePoseidon(
   leaves,
   depth = 15,
   proof_depth = 30,
   nullNode = NULL_NODE
-) {
+): Promise<MerkleTree> {
   if (!poseidon) {
     poseidon = await buildPoseidon();
     F = poseidon.F;
