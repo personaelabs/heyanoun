@@ -13,6 +13,8 @@ import AsyncLock from "async-lock";
 
 const Nouns = new nerman.Nouns(process.env.JSON_RPC_API_URL);
 
+const lock = new AsyncLock();
+
 async function getCurrentNounerMap() {
   const results = await executeQuery(curNounsQuery);
   const ownerObjs = results["nouns"].map((i) => i["owner"]);
@@ -39,7 +41,6 @@ async function getCurTrees() {
 
   const anonSet1 = Array.from(new Set(Object.keys(nounerMap)));
   const tree1 = await buildTreePoseidon(anonSet1);
-  console.log(anonSet1.length);
 
   const anonSet2 = Array.from(
     Object.entries(nounerMap)
@@ -47,28 +48,21 @@ async function getCurTrees() {
       .map((e) => e[0])
   );
   const tree2 = await buildTreePoseidon(anonSet2);
-  console.log(anonSet2.length);
 
   return [tree1, tree2];
 }
 
 async function getAndWriteCurTrees() {
-  AsyncLock.acquire(
-    "rewrite-cur-nouner-trees",
-    async () => {
-      const prop = await createProp(-1);
-      const [tree1, tree2] = await getCurTrees();
+  lock.acquire("rewrite-cur-nouner-trees", async () => {
+    const prop = await createProp(-1);
+    const [tree1, tree2] = await getCurTrees();
 
-      // deletes all existing leaves for the prop!
-      await cleanLeaves(prop.id);
+    // deletes all existing leaves for the prop!
+    await cleanLeaves(prop.id);
 
-      await writeTree(tree1, prop.id, 1);
-      await writeTree(tree2, prop.id, 2);
-    },
-    function (err, ret) {
-      console.log(`Error acquiring lock: ${err}`);
-    }
-  );
+    await writeTree(tree1, prop.id, 1);
+    await writeTree(tree2, prop.id, 2);
+  });
 }
 
 Nouns.on("Transfer", async (data: nerman.EventData.Transfer) => {
