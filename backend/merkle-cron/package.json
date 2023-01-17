@@ -2,15 +2,18 @@
   "name": "merkle-cron",
   "version": "1.0.0",
   "description": "cron for building merkleized anonymity sets",
-  "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "npx graphclient build"
+    "build": "npx graphclient build",
+    "cron": "yarn ts-node src/cron.ts",
+    "eventServer": "yarn ts-node src/eventServer.ts"
   },
   "dependencies": {
     "@prisma/client": "4.5.0",
     "@types/node": "18.11.3",
+    "async-lock": "1.4.0",
     "circomlibjs": "0.1.7",
+    "nerman": "0.0.4",
     "typescript": "4.8.4"
   },
   "devDependencies": {
