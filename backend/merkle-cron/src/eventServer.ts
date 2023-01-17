@@ -4,11 +4,12 @@ import { curNounsQuery, executeQuery } from "./graphql";
 
 import { buildTreePoseidon } from "./merklePoseidon";
 
-import { cleanLeaves, createProp, disconnectDb, writeTree } from "./db";
+import { cleanLeaves, createProp, writeTree } from "./db";
 
 import "dotenv/config";
 
 import * as nerman from "nerman";
+import AsyncLock from "async-lock";
 
 const Nouns = new nerman.Nouns(process.env.JSON_RPC_API_URL);
 
@@ -51,16 +52,23 @@ async function getCurTrees() {
   return [tree1, tree2];
 }
 
-// TODO: add locking
 async function getAndWriteCurTrees() {
-  const prop = await createProp(-1);
-  const [tree1, tree2] = await getCurTrees();
+  AsyncLock.acquire(
+    "rewrite-trees",
+    async () => {
+      const prop = await createProp(-1);
+      const [tree1, tree2] = await getCurTrees();
 
-  // deletes all existing leaves for the prop!
-  await cleanLeaves(prop.id);
+      // deletes all existing leaves for the prop!
+      await cleanLeaves(prop.id);
 
-  await writeTree(tree1, prop.id, 1);
-  await writeTree(tree2, prop.id, 2);
+      await writeTree(tree1, prop.id, 1);
+      await writeTree(tree2, prop.id, 2);
+    },
+    function (err, ret) {
+      console.log(`Error acquiring lock: ${err}`);
+    }
+  );
 }
 
 Nouns.on("Transfer", async (data: nerman.EventData.Transfer) => {
@@ -88,5 +96,3 @@ Nouns.on("DelegateChanged", async (data: nerman.EventData.DelegateChanged) => {
 
   await getAndWriteCurTrees();
 });
-
-// TODO: disconnect db when done
