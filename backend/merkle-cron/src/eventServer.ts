@@ -54,7 +54,7 @@ async function getCurTrees() {
 
 async function getAndWriteCurTrees() {
   AsyncLock.acquire(
-    "rewrite-trees",
+    "rewrite-cur-nouner-trees",
     async () => {
       const prop = await createProp(-1);
       const [tree1, tree2] = await getCurTrees();
