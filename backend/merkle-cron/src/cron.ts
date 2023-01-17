@@ -9,9 +9,7 @@ import {
   getLastFinalizedProp,
   createGroupTypes,
   createProp,
-  createGroup,
   finalizeProp,
-  createLeaves,
   disconnectDb,
   writeTree,
 } from "./db";

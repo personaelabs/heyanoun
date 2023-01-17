@@ -90,3 +90,14 @@ Nouns.on("DelegateChanged", async (data: nerman.EventData.DelegateChanged) => {
 
   await getAndWriteCurTrees();
 });
+
+Nouns.on("NounCreated", async (data: nerman.EventData.NounCreated) => {
+  console.log(
+    "NounsToken | NounCreated | id:" +
+      data.id +
+      ", seed: " +
+      JSON.stringify(data.seed)
+  );
+
+  await getAndWriteCurTrees();
+});
