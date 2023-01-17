@@ -117,6 +117,19 @@ export async function finalizeProp(id: number) {
   });
 }
 
+// NOTE: should only to be used with propId -1 (cur nouners)
+export async function cleanLeaves(propId: number) {
+  await prisma.leaf.deleteMany({
+    where: {
+      group: {
+        prop: {
+          id: propId,
+        },
+      },
+    },
+  });
+}
+
 export async function writeTree(tree: MerkleTree, propId, typeId) {
   console.log(`[prop ${propId} anonSet ${typeId}] - root: ${tree.root}`);
   console.log(`[prop ${propId} anonSet ${typeId}] - creating group in db`);

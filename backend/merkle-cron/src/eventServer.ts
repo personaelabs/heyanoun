@@ -4,7 +4,7 @@ import { curNounsQuery, executeQuery } from "./graphql";
 
 import { buildTreePoseidon } from "./merklePoseidon";
 
-import { createProp, disconnectDb, writeTree } from "./db";
+import { cleanLeaves, createProp, disconnectDb, writeTree } from "./db";
 
 import "dotenv/config";
 
@@ -51,15 +51,15 @@ async function getCurTrees() {
   return [tree1, tree2];
 }
 
-// TODO: test this method
+// TODO: add locking
 async function getAndWriteCurTrees() {
   const prop = await createProp(-1);
   const [tree1, tree2] = await getCurTrees();
 
-  // TODO: delete old leaves??? atomically s.t. no clashing here
-  await writeTree(tree1, prop.id, 1);
+  // deletes all existing leaves for the prop!
+  await cleanLeaves(prop.id);
 
-  // TODO: delete old leaves??? atomically s.t. no clashing here
+  await writeTree(tree1, prop.id, 1);
   await writeTree(tree2, prop.id, 2);
 }
 
