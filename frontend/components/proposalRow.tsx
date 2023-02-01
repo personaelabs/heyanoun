@@ -76,12 +76,12 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
     isPast = new Date(timeRemaining).getTime() < Date.now();
   }
 
-  const { isLoading, data } = useQuery<PropCommentsPayload>({
-    queryKey: [`${prop.id}_comments`],
-    queryFn: getPropComments(prop.id),
-    retry: 1,
-    staleTime: 1000,
-  });
+  // const { isLoading, data } = useQuery<PropCommentsPayload>({
+  //   queryKey: [`${prop.id}_comments`],
+  //   queryFn: getPropComments(prop.id),
+  //   retry: 1,
+  //   staleTime: 1000,
+  // });
 
   return (
     <>
@@ -97,21 +97,27 @@ const ProposalRow: React.FC<IProposalRowProps> = ({
         onClick={openModal}
         className="rounded-2xl transition-all shadow-sm bg-white p-3 md:px-5 md:py-4 flex flex-col gap-4 justify-between border border-gray-200 hover:border-gray-300 hover:cursor-pointer"
       >
-
         <div className="text-lg md:text-xl font-bold self-start line-clamp-2">
-          {prop.id}: <span className="text-black tracking-tight font-normal">{prop.title}</span>
+          {prop.id}:{" "}
+          <span className="text-black tracking-tight font-normal">
+            {prop.title}
+          </span>
         </div>
-
 
         <div className="flex justify-between">
           <div className="flex gap-2">
             <ProposalStatusPill status={prop.status} isDefeated={isDefeated} />
 
-            {!isPast && currentBlockNumber !== undefined && <TimeLeftPill timeLeft={timeRemainingEN} />}
+            {!isPast && currentBlockNumber !== undefined && (
+              <TimeLeftPill timeLeft={timeRemainingEN} />
+            )}
           </div>
 
-          {isLoading || !data ? <ClipLoader color="hsla(168, 9%, 52%, 1)" />
-            : data.comments && <CommentCount count={data.comments.length} />}
+          {/* {isLoading || !data ? (
+            <ClipLoader color="hsla(168, 9%, 52%, 1)" />
+          ) : (
+            data.comments && <CommentCount count={data.comments.length} />
+          )} */}
         </div>
       </div>
     </>
