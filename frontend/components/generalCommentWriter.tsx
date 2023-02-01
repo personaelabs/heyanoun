@@ -16,12 +16,12 @@ import localforage from "localforage";
 import axios from "axios";
 import { Textarea } from "./textarea";
 import { toUtf8Bytes } from "ethers/lib/utils";
+import Spinner from "../components/spinner";
 
 import { LeafPayload, PropGroupsPayload } from "../types/api";
 import { useQuery } from "@tanstack/react-query";
 
 import toast from "react-hot-toast";
-import { ClipLoader } from "react-spinners";
 
 interface CommentWriterProps {
   propId: number;
@@ -77,8 +77,6 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
     enabled: true,
     staleTime: 1000,
   });
-
-  console.log(propGroups);
 
   const groupTypeToMerkleTreeProofData: { [key: string]: MerkleTreeProofData } =
     useMemo(() => {
@@ -338,11 +336,17 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
         </div>
         <div className="flex justify-end">
           <button
-            onClick={prepareProof}
+            onClick={() => {
+              if (!loadingText) {
+                prepareProof();
+              }
+            }}
             className="bg-black transition-all hover:bg-slate-900 hover:scale-105 active:scale-100 text-white font-semibold rounded-md px-4 py-2 mt-4"
           >
             {loadingText ? (
-              <ClipLoader size={20} color="hsla(168, 9%, 52%, 1)" />
+              <div className="mx-16 py-1">
+                <Spinner />
+              </div>
             ) : (
               `Post Anonymously`
             )}

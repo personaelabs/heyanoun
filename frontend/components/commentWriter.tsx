@@ -19,9 +19,9 @@ import { toUtf8Bytes } from "ethers/lib/utils";
 
 import { LeafPayload, PropGroupsPayload } from "../types/api";
 import { useQuery } from "@tanstack/react-query";
+import Spinner from "../components/spinner";
 
 import toast from "react-hot-toast";
-import { ClipLoader } from "react-spinners";
 
 interface CommentWriterProps {
   propId: number;
@@ -269,7 +269,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
     <div className="max-w-xl mx-auto">
       {propGroupsLoading || groupTypeToMerkleTreeProofData === undefined ? (
         <div className="bg-gray-100 border border-gray-300 p-12 py-24 rounded-md flex justify-center text-gray-800">
-          <ClipLoader color="hsla(168, 9%, 52%, 1)" />
+          <Spinner />
         </div>
       ) : canPost ? (
         <div>
@@ -338,11 +338,17 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
           </div>
           <div className="flex justify-end">
             <button
-              onClick={prepareProof}
+              onClick={() => {
+                if (!loadingText) {
+                  prepareProof();
+                }
+              }}
               className="bg-black transition-all hover:bg-slate-900 hover:scale-105 active:scale-100 text-white font-semibold rounded-md px-4 py-2 mt-4"
             >
               {loadingText ? (
-                <ClipLoader size={20} color="hsla(168, 9%, 52%, 1)" />
+                <div className="mx-16 py-1">
+                  <Spinner />
+                </div>
               ) : (
                 `Post Anonymously`
               )}

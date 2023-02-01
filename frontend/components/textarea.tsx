@@ -19,6 +19,7 @@ const Container = styled.div`
     background: transparent;
     word-wrap: break-word;
     white-space: pre-wrap;
+    min-height: 100px;
   }
 
   textarea {
@@ -30,8 +31,8 @@ const Container = styled.div`
     resize: none;
     position: absolute;
     background: white;
-    opacity: 0.8;
     border-radius: 8px;
+    min-height: 100px;
   }
 
   .hidden {
@@ -54,7 +55,7 @@ export const Textarea = ({ value, onChangeHandler, placeholder }: Props) => {
         placeholder={placeholder}
         value={value}
         onChange={(evt) => onChangeHandler(evt.target.value)}
-      ></textarea>
+      />
     </Container>
   );
 };
