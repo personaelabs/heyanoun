@@ -61,7 +61,9 @@ const getPropGroups = async (propId: number) =>
     })
   ).data;
 
-const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
+const CommentWriter: React.FC<CommentWriterProps> = () => {
+  const propId = -1;
+
   const { address, connector, isConnected } = useAccount();
 
   const {
@@ -75,6 +77,8 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
     enabled: true,
     staleTime: 1000,
   });
+
+  console.log(propGroups);
 
   const groupTypeToMerkleTreeProofData: { [key: string]: MerkleTreeProofData } =
     useMemo(() => {
@@ -107,6 +111,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
   const [loadingText, setLoadingText] = React.useState<string | undefined>(
     undefined
   );
+
   const [successProofGen, setSuccessProofGen] = React.useState<
     boolean | undefined
   >(undefined);
@@ -267,89 +272,83 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
 
   return (
     <div className="max-w-xl mx-auto">
-      {propGroupsLoading || groupTypeToMerkleTreeProofData === undefined ? (
-        <div className="bg-gray-100 border border-gray-300 p-12 py-24 rounded-md flex justify-center text-gray-800">
-          <ClipLoader color="hsla(168, 9%, 52%, 1)" />
-        </div>
-      ) : canPost ? (
-        <div>
-          <div className="bg-white rounded-md shadow-sm border border-gray-200 overflow-clip">
-            <div className="py-2 px-0">
-              <Textarea
-                value={commentMsg}
-                placeholder="Add your comment..."
-                onChangeHandler={(newVal) => setCommentMsg(newVal)}
-              />
-            </div>
-
-            <div className="bg-gray-50 border-t border-gray-100 flex justify-end items-center p-3 space-x-2">
-              <span className="text-base text-gray-800 font-semibold mr-2">
-                Post As
-              </span>
-              {nounSetToDbType(NounSet.Nounder) in
-                groupTypeToMerkleTreeProofData && (
-                <div
-                  onClick={() => {
-                    setActiveNounSet(NounSet.Nounder);
-                  }}
-                >
-                  <AnonPill
-                    nounSet={NounSet.Nounder}
-                    isActive={activeNounSet === NounSet.Nounder}
-                    proofURL="#"
-                    isClickable={false}
-                  />
-                </div>
-              )}
-
-              {nounSetToDbType(NounSet.SingleNoun) in
-                groupTypeToMerkleTreeProofData && (
-                <div
-                  onClick={() => {
-                    setActiveNounSet(NounSet.SingleNoun);
-                  }}
-                >
-                  <AnonPill
-                    nounSet={NounSet.SingleNoun}
-                    isActive={activeNounSet === NounSet.SingleNoun}
-                    proofURL="#"
-                    isClickable={false}
-                  />
-                </div>
-              )}
-
-              {nounSetToDbType(NounSet.ManyNouns) in
-                groupTypeToMerkleTreeProofData && (
-                <div
-                  onClick={() => {
-                    setActiveNounSet(NounSet.ManyNouns);
-                  }}
-                >
-                  <AnonPill
-                    nounSet={NounSet.ManyNouns}
-                    isActive={activeNounSet === NounSet.ManyNouns}
-                    proofURL="#"
-                    isClickable={false}
-                  />
-                </div>
-              )}
-            </div>
-            <div></div>
+      <div>
+        <div className="bg-white rounded-md shadow-sm border border-gray-200 overflow-clip">
+          <div className="py-2 px-0">
+            <Textarea
+              value={commentMsg}
+              placeholder="Add your comment..."
+              onChangeHandler={(newVal) => setCommentMsg(newVal)}
+            />
           </div>
-          <div className="flex justify-end">
-            <button
-              onClick={prepareProof}
-              className="bg-black transition-all hover:bg-slate-900 hover:scale-105 active:scale-100 text-white font-semibold rounded-md px-4 py-2 mt-4"
-            >
-              {loadingText ? (
-                <ClipLoader size={20} color="hsla(168, 9%, 52%, 1)" />
-              ) : (
-                `Post Anonymously`
-              )}
-            </button>
+
+          <div className="bg-gray-50 border-t border-gray-100 flex justify-end items-center p-3 space-x-2">
+            <span className="text-base text-gray-800 font-semibold mr-2">
+              Post As
+            </span>
+            {nounSetToDbType(NounSet.Nounder) in
+              groupTypeToMerkleTreeProofData && (
+              <div
+                onClick={() => {
+                  setActiveNounSet(NounSet.Nounder);
+                }}
+              >
+                <AnonPill
+                  nounSet={NounSet.Nounder}
+                  isActive={activeNounSet === NounSet.Nounder}
+                  proofURL="#"
+                  isClickable={false}
+                />
+              </div>
+            )}
+
+            {nounSetToDbType(NounSet.SingleNoun) in
+              groupTypeToMerkleTreeProofData && (
+              <div
+                onClick={() => {
+                  setActiveNounSet(NounSet.SingleNoun);
+                }}
+              >
+                <AnonPill
+                  nounSet={NounSet.SingleNoun}
+                  isActive={activeNounSet === NounSet.SingleNoun}
+                  proofURL="#"
+                  isClickable={false}
+                />
+              </div>
+            )}
+
+            {nounSetToDbType(NounSet.ManyNouns) in
+              groupTypeToMerkleTreeProofData && (
+              <div
+                onClick={() => {
+                  setActiveNounSet(NounSet.ManyNouns);
+                }}
+              >
+                <AnonPill
+                  nounSet={NounSet.ManyNouns}
+                  isActive={activeNounSet === NounSet.ManyNouns}
+                  proofURL="#"
+                  isClickable={false}
+                />
+              </div>
+            )}
           </div>
+          <div></div>
         </div>
-      ) : null}
+        <div className="flex justify-end">
+          <button
+            onClick={prepareProof}
+            className="bg-black transition-all hover:bg-slate-900 hover:scale-105 active:scale-100 text-white font-semibold rounded-md px-4 py-2 mt-4"
+          >
+            {loadingText ? (
+              <ClipLoader size={20} color="hsla(168, 9%, 52%, 1)" />
+            ) : (
+              `Post Anonymously`
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

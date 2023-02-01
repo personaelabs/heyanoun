@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import classnames from "classnames";
 import { useBlockNumber } from "wagmi";
 import { ProposalRowLoading } from "../components/proposalRowLoading";
+import GeneralCommentWriter from "../components/generalCommentWriter";
 
 const getDbProps = async () =>
   (await axios.get<PropsPayload>("/api/getProps")).data;
@@ -129,7 +130,7 @@ const Home: NextPage = () => {
           </div>
         </div>
 
-        <div className="bg-gray-50">
+        <div className="bg-gray-50 min-h-screen">
           <div className="max-w-3xl mx-auto py-5 md:py-10 px-3 md:px-0">
             <div className="flex space-x-2">
               <button
@@ -186,7 +187,14 @@ const Home: NextPage = () => {
                 </>
               )}
 
-              {tabState === 1 && <>This is where comments are going to be </>}
+              {tabState === 1 && (
+                <>
+                  <h2 className="ml-2 mb-4 text-xl font-semibold text-gray-800">
+                    What comments do you have about the DAO generally?
+                  </h2>
+                  <GeneralCommentWriter propId={1} />{" "}
+                </>
+              )}
             </div>
           </div>
         </div>
