@@ -269,7 +269,7 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
   );
 
   return (
-    <div className="max-w-xl mx-auto">
+    <div className="mx-auto">
       <div>
         <div className="bg-white rounded-md shadow-sm border border-gray-200 overflow-clip">
           <div className="py-2 px-0">

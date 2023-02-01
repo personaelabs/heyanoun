@@ -136,7 +136,7 @@ const Home: NextPage = () => {
               <button
                 type="button"
                 className={classnames(
-                  "font-semi-bold items-center rounded-md border border-transparent bg-gray-50 px-4 py-2 font-medium text-gray-800 hover:bg-gray-100 text-xl transition-all ",
+                  "font-semi-bold items-center rounded-md border border-transparent bg-gray-50 active:bg-gray-200 px-4 py-2 font-medium text-gray-800 hover:bg-gray-100 text-xl transition-all ",
                   {
                     "bg-gray-100": tabState === 0,
                   }
@@ -150,7 +150,7 @@ const Home: NextPage = () => {
               <button
                 type="button"
                 className={classnames(
-                  "font-semi-bold items-center rounded-md border border-transparent bg-gray-50 px-4 py-2 font-medium text-gray-800 hover:bg-gray-100 text-xl transition-all",
+                  "font-semi-bold items-center rounded-md border border-transparent bg-gray-50 active:bg-gray-200 px-4 py-2 font-medium text-gray-800 hover:bg-gray-100 text-xl transition-all",
                   {
                     "bg-gray-100": tabState === 1,
                   }
@@ -188,12 +188,21 @@ const Home: NextPage = () => {
               )}
 
               {tabState === 1 && (
-                <>
-                  <h2 className="ml-2 mb-4 text-xl font-semibold text-gray-800">
-                    What comments do you have about the DAO generally?
+                <div className="space-y-4">
+                  <h2 className="ml-2 text-2xl font-semibold text-gray-800">
+                    What are some some comments you have about the DAO
+                    generally?
                   </h2>
-                  <GeneralCommentWriter propId={1} />{" "}
-                </>
+                  <div className="p-6 py-3 rounded-lg bg-gray-100 border border-gray-200">
+                    <span className="text-lg">❤️</span>
+                    <span className="text-base ml-1">
+                      We ask to please keep the feedback constructive and
+                      respectful. A sound argument wrapped in a personal attack
+                      will typically fall on deaf ears.
+                    </span>
+                  </div>
+                  <GeneralCommentWriter propId={1} />
+                </div>
               )}
             </div>
           </div>
