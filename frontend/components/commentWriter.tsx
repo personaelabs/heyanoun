@@ -161,6 +161,15 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
         setLoadingText(undefined);
         console.error("Missing merkle tree data");
         return;
+      } else if (commentMsg.length > 600) {
+        toast.error(
+          "Comment is too long, please keep less than 600 characters!",
+          {
+            position: "bottom-right",
+          }
+        );
+        setLoadingText(undefined);
+        return;
       }
       //TODO: add loading state or progress bar first time it downloads zkey
       await downloadZKey();
