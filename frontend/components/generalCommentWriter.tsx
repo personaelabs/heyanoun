@@ -1,7 +1,10 @@
 import * as React from "react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useAccount, useSignTypedData } from "wagmi";
 import { PointPreComputes } from "../types/zk";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { motion, AnimatePresence } from "framer-motion";
+
 import {
   leafDataToAddress,
   splitToRegisters,
@@ -63,8 +66,19 @@ const getPropGroups = async (propId: number) =>
 
 const CommentWriter: React.FC<CommentWriterProps> = () => {
   const propId = -1;
+  const { address } = useAccount();
+  const { openConnectModal } = useConnectModal();
+  const [isTimedSuccess, setTimedSucess] = useState(false);
 
-  const { address, connector, isConnected } = useAccount();
+  useEffect(() => {
+    if (isTimedSuccess) {
+      const timeout = setTimeout(() => {
+        setTimedSucess(false);
+      }, 2500);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [isTimedSuccess]);
 
   const {
     isLoading: propGroupsLoading,
@@ -215,7 +229,9 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
           refetch();
           // TODO: post to IPFS or store in our db
           setSuccessProofGen(true);
-          // TODO: add toast showing success
+          // TODO add toast showing success and link to proof
+          setTimedSucess(true);
+          setCommentMsg("");
           setLoadingText(undefined);
         }
       };
@@ -224,12 +240,24 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
   );
 
   const prepareProof = React.useCallback(async () => {
+    if (commentMsg.length <= 2) {
+      toast.error("Your comment is too short.", {
+        position: "bottom-right",
+      });
+      return;
+    }
+
+    if (loadingText) {
+      return;
+    }
+
     try {
       setLoadingText("Generating proof...");
       if (!address) {
         toast.error("Please connect your wallet before trying to post!", {
           position: "bottom-right",
         });
+        openConnectModal?.();
         setLoadingText(undefined);
         return;
       }
@@ -269,9 +297,38 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
   );
 
   return (
-    <div className="mx-auto">
+    <div className="mx-auto rounded-md">
       <div>
-        <div className="bg-white rounded-md shadow-sm border border-gray-200 overflow-clip">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 relative overflow-clip">
+          {/* Sucessful Post Overlay */}
+          <AnimatePresence>
+            {isTimedSuccess && (
+              <motion.div
+                exit={{ opacity: 0 }}
+                className="bg-gray-100 rounded-lg absolute w-full h-full z-10 flex flex-col justify-center items-center"
+              >
+                <motion.div
+                  initial={{ y: -12, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  exit={{ y: 12, opacity: 0 }}
+                  className="text-4xl mb-2"
+                >
+                  🎉
+                </motion.div>
+                <motion.div
+                  initial={{ y: -12, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: 12, opacity: 0 }}
+                  transition={{ duration: 0.3, delay: 0.1 }}
+                  className="font-semibold text-base text-gray-800 max-w-[15rem] text-center"
+                >
+                  Your comment has been successfully posted.
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className="py-2 px-0">
             <Textarea
               value={commentMsg}
@@ -336,11 +393,7 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
         </div>
         <div className="flex justify-end">
           <button
-            onClick={() => {
-              if (!loadingText) {
-                prepareProof();
-              }
-            }}
+            onClick={prepareProof}
             className="bg-black transition-all hover:bg-slate-900 hover:scale-105 active:scale-100 text-white font-semibold rounded-md px-4 py-2 mt-4"
           >
             {loadingText ? (

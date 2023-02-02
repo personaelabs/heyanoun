@@ -3,7 +3,7 @@ import styled from "styled-components";
 const Container = styled.div`
   position: relative;
   width: 100%;
-  z-index: 40;
+  z-index: 5;
   textarea,
   pre {
     width: 100%;
