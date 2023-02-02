@@ -13,7 +13,7 @@ export default async function getPropComments(
     } else {
       const prop = await prisma.prop.findFirst({
         where: {
-          id: parseInt(propId),
+          num: parseInt(propId),
         },
         select: {
           Comments: true,

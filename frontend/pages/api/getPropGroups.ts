@@ -19,7 +19,9 @@ export default async function getPropGroups(
     } else {
       const dbGroups = await prisma.group.findMany({
         where: {
-          propId: parseInt(propId),
+          prop: {
+            num: parseInt(propId),
+          },
         },
         select: {
           leaves: true,
