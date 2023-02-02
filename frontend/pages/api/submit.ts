@@ -56,7 +56,7 @@ export default async function submit(
     const commentMsg = body.commentMsg;
     const publicSignatureData: PublicSignatureData = body.publicSignatureData;
 
-    if (commentMsg > POST_CHAR_LIMIT) {
+    if (commentMsg.length > POST_CHAR_LIMIT) {
       res.status(400).send("commentMsg is too long!");
       return;
     }
