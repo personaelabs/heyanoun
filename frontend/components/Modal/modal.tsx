@@ -4,10 +4,9 @@ import styles from "./Modal.module.css";
 import CommentView from "../commentView";
 import CommentWriter from "../commentWriter";
 import { PropCommentsPayload } from "../../types/api";
-import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { useRef } from "react";
-import { ClipLoader } from "react-spinners";
+import { getPropComments } from "../../requests";
+import Spinner from "../spinner";
 
 interface IModalProps {
   isOpen: boolean;
@@ -15,15 +14,6 @@ interface IModalProps {
   handleClose: (isOpen: boolean) => void;
   description: string;
 }
-
-const getPropComments = (propId: number) => async () =>
-  (
-    await axios.get<PropCommentsPayload>("/api/getPropComments", {
-      params: {
-        propId,
-      },
-    })
-  ).data;
 
 const Modal: React.FC<IModalProps> = ({
   isOpen,
@@ -65,7 +55,7 @@ const Modal: React.FC<IModalProps> = ({
               </div>
               <div className="bg-gray-50 border-t border-gray-200 py-8 pb-16 space-y-4">
                 {isLoading || !data ? (
-                  <ClipLoader color="hsla(168, 9%, 52%, 1)" />
+                  <Spinner />
                 ) : data.comments.length !== 0 ? (
                   data.comments.map((comment) => (
                     <CommentView
