@@ -30,7 +30,9 @@ async function verifyRoot(
 ): Promise<boolean> {
   const group = await prisma.group.findFirst({
     where: {
-      propId: Number(propId),
+      prop: {
+        num: Number(propId),
+      },
       typeId: Number(groupType),
     },
   });
