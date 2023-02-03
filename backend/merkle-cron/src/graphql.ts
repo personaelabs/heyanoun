@@ -3,9 +3,10 @@ import gql from "graphql-tag";
 
 import { execute } from "../.graphclient";
 
+// TODO: future proof against >1000 total nouns
 const curNounsQuery = gql`
   {
-    nouns {
+    nouns(first: 1000) {
       owner {
         delegate {
           id
