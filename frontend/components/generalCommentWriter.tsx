@@ -204,6 +204,7 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
       worker.onmessage = async function (e) {
         const { proof, publicSignals } = e.data;
         console.log("PROOF SUCCESSFULLY GENERATED: ", proof);
+        console.log("PUBLIC SIGNALS: ", publicSignals);
 
         if (!merkleTreeProofData.current) {
           throw new Error("Missing merkle tree data");
@@ -227,7 +228,6 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
             position: "bottom-right",
           });
           refetch();
-          // TODO: post to IPFS or store in our db
           setSuccessProofGen(true);
           // TODO add toast showing success and link to proof
           setTimedSucess(true);
