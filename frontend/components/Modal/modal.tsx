@@ -4,10 +4,9 @@ import styles from "./Modal.module.css";
 import CommentView from "../commentView";
 import CommentWriter from "../commentWriter";
 import { PropCommentsPayload } from "../../types/api";
-import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { useRef } from "react";
-import { ClipLoader } from "react-spinners";
+import { getPropComments } from "../../requests";
+import Spinner from "../spinner";
 
 interface IModalProps {
   isOpen: boolean;
@@ -15,15 +14,6 @@ interface IModalProps {
   handleClose: (isOpen: boolean) => void;
   description: string;
 }
-
-const getPropComments = (propId: number) => async () =>
-  (
-    await axios.get<PropCommentsPayload>("/api/getPropComments", {
-      params: {
-        propId,
-      },
-    })
-  ).data;
 
 const Modal: React.FC<IModalProps> = ({
   isOpen,
@@ -44,28 +34,28 @@ const Modal: React.FC<IModalProps> = ({
       {/* The backdrop, rendered as a fixed sibling to the panel container */}
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
-      
-
       {/* This is the actual modal and it's contents */}
       <div className="fixed inset-0 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center">
           <Dialog.Panel className="w-full max-w-5xl bg-white ">
             <div className="">
               <div className="px-4 py-3 md:px-12 md:py-10">
-              
                 <div className="flex justify-end sm:hidden">
-                  <button className="w-fit border font-bold bg-black border-black text-white rounded-full px-1.5" onClick={handleClose as any}>
-                  X
+                  <button
+                    className="w-fit border font-bold bg-black border-black text-white rounded-full px-1.5"
+                    onClick={handleClose as any}
+                  >
+                    X
                   </button>
                 </div>
-                
+
                 <ReactMarkdown className={styles.markdown}>
                   {description}
                 </ReactMarkdown>
               </div>
               <div className="bg-gray-50 border-t border-gray-200 py-8 pb-16 space-y-4">
                 {isLoading || !data ? (
-                  <ClipLoader color="hsla(168, 9%, 52%, 1)" />
+                  <Spinner />
                 ) : data.comments.length !== 0 ? (
                   data.comments.map((comment) => (
                     <CommentView

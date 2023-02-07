@@ -45,7 +45,8 @@ export const postScreenshot = async (
     mimeType: EUploadMimeType.Png,
   });
 
-  await client.v2.tweet(`prop: ${propId}\nproof: ${proofIPFS}`, {
+  const propHeader = propId === -1 ? "general comment" : `prop: ${propId}`;
+  await client.v2.tweet(`${propHeader}\nproof: ${proofIPFS}`, {
     media: { media_ids: [mediaId] },
   });
 };

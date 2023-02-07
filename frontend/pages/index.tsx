@@ -4,12 +4,14 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { PropsPayload } from "../types/api";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import ProposalRow from "../components/proposalRow";
 import { extractTitle, getSubgraphProps } from "../utils/graphql";
 import { motion } from "framer-motion";
+import classnames from "classnames";
 import { useBlockNumber } from "wagmi";
 import { ProposalRowLoading } from "../components/proposalRowLoading";
+import GeneralCommentPanel from "../components/generalCommentPanel";
 
 const getDbProps = async () =>
   (await axios.get<PropsPayload>("/api/getProps")).data;
@@ -33,6 +35,7 @@ export interface DisplayProp {
 
 const Home: NextPage = () => {
   const { data: currentBlockNumber } = useBlockNumber();
+  const [tabState, setTabState] = useState(0);
 
   const { isLoading: propIdsLoading, data: propIdsPayload } =
     useQuery<PropsPayload>({
@@ -127,29 +130,64 @@ const Home: NextPage = () => {
           </div>
         </div>
 
-        <div className="bg-gray-50">
+        <div className="bg-gray-50 min-h-screen">
           <div className="max-w-3xl mx-auto py-5 md:py-10 px-3 md:px-0">
-            <h2 className="font-semibold text-3xl"> Proposals</h2>
-            <div className="mt-4">
-              {propIdsLoading ||
-              propMetadataLoading ||
-              propsReverseOrder == undefined ? (
-                <ProposalRowLoading count={12} />
-              ) : (
-                <div className="space-y-3 md:space-y-4">
-                  {propsReverseOrder &&
-                    propsReverseOrder.map((prop: DisplayProp) => {
-                      return (
-                        <div key={prop.id}>
-                          <ProposalRow
-                            prop={prop}
-                            currentBlockNumber={currentBlockNumber}
-                          />
-                        </div>
-                      );
-                    })}
-                </div>
+            <div className="flex space-x-2">
+              <button
+                type="button"
+                className={classnames(
+                  "font-semi-bold items-center rounded-md border border-transparent bg-gray-50 active:bg-gray-200 px-4 py-2 font-medium text-gray-800 hover:bg-gray-100 text-xl transition-all ",
+                  {
+                    "bg-gray-100": tabState === 0,
+                  }
+                )}
+                onClick={() => {
+                  setTabState(0);
+                }}
+              >
+                Proposals
+              </button>
+              <button
+                type="button"
+                className={classnames(
+                  "font-semi-bold items-center rounded-md border border-transparent bg-gray-50 active:bg-gray-200 px-4 py-2 font-medium text-gray-800 hover:bg-gray-100 text-xl transition-all",
+                  {
+                    "bg-gray-100": tabState === 1,
+                  }
+                )}
+                onClick={() => {
+                  setTabState(1);
+                }}
+              >
+                General
+              </button>
+            </div>
+            <div className="mt-6">
+              {tabState === 0 && (
+                <>
+                  {propIdsLoading ||
+                  propMetadataLoading ||
+                  propsReverseOrder == undefined ? (
+                    <ProposalRowLoading count={12} />
+                  ) : (
+                    <div className="space-y-3 md:space-y-4">
+                      {propsReverseOrder &&
+                        propsReverseOrder.map((prop: DisplayProp) => {
+                          return (
+                            <div key={prop.id}>
+                              <ProposalRow
+                                prop={prop}
+                                currentBlockNumber={currentBlockNumber}
+                              />
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
+                </>
               )}
+
+              {tabState === 1 && <GeneralCommentPanel />}
             </div>
           </div>
         </div>

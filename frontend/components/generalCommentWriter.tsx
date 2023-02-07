@@ -1,7 +1,10 @@
 import * as React from "react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useAccount, useSignTypedData } from "wagmi";
 import { PointPreComputes } from "../types/zk";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
+import { motion, AnimatePresence } from "framer-motion";
+
 import {
   leafDataToAddress,
   splitToRegisters,
@@ -16,10 +19,10 @@ import localforage from "localforage";
 import axios from "axios";
 import { Textarea } from "./textarea";
 import { toUtf8Bytes } from "ethers/lib/utils";
+import Spinner from "../components/spinner";
 
 import { LeafPayload, PropGroupsPayload } from "../types/api";
 import { useQuery } from "@tanstack/react-query";
-import Spinner from "../components/spinner";
 
 import toast from "react-hot-toast";
 
@@ -61,8 +64,21 @@ const getPropGroups = async (propId: number) =>
     })
   ).data;
 
-const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
-  const { address, connector, isConnected } = useAccount();
+const CommentWriter: React.FC<CommentWriterProps> = () => {
+  const propId = -1;
+  const { address } = useAccount();
+  const { openConnectModal } = useConnectModal();
+  const [isTimedSuccess, setTimedSucess] = useState(false);
+
+  useEffect(() => {
+    if (isTimedSuccess) {
+      const timeout = setTimeout(() => {
+        setTimedSucess(false);
+      }, 2500);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [isTimedSuccess]);
 
   const {
     isLoading: propGroupsLoading,
@@ -107,6 +123,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
   const [loadingText, setLoadingText] = React.useState<string | undefined>(
     undefined
   );
+
   const [successProofGen, setSuccessProofGen] = React.useState<
     boolean | undefined
   >(undefined);
@@ -187,6 +204,7 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
       worker.onmessage = async function (e) {
         const { proof, publicSignals } = e.data;
         console.log("PROOF SUCCESSFULLY GENERATED: ", proof);
+        console.log("PUBLIC SIGNALS: ", publicSignals);
 
         if (!merkleTreeProofData.current) {
           throw new Error("Missing merkle tree data");
@@ -209,10 +227,11 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
           toast.success("Proof submitted successfully!", {
             position: "bottom-right",
           });
-          await refetch();
-          // TODO: post to IPFS or store in our db
+          refetch();
           setSuccessProofGen(true);
-          // TODO: add toast showing success
+          // TODO add toast showing success and link to proof
+          setTimedSucess(true);
+          setCommentMsg("");
           setLoadingText(undefined);
         }
       };
@@ -221,12 +240,24 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
   );
 
   const prepareProof = React.useCallback(async () => {
+    if (commentMsg.length <= 2) {
+      toast.error("Your comment is too short.", {
+        position: "bottom-right",
+      });
+      return;
+    }
+
+    if (loadingText) {
+      return;
+    }
+
     try {
       setLoadingText("Generating proof...");
       if (!address) {
         toast.error("Please connect your wallet before trying to post!", {
           position: "bottom-right",
         });
+        openConnectModal?.();
         setLoadingText(undefined);
         return;
       }
@@ -266,96 +297,115 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
   );
 
   return (
-    <div className="max-w-xl mx-auto">
-      {propGroupsLoading || groupTypeToMerkleTreeProofData === undefined ? (
-        <div className="bg-gray-100 border border-gray-300 p-12 py-24 rounded-md flex justify-center text-gray-800">
-          <Spinner />
-        </div>
-      ) : canPost ? (
-        <div>
-          <div className="bg-white rounded-md shadow-sm border border-gray-200 overflow-clip">
-            <div className="py-2 px-0">
-              <Textarea
-                value={commentMsg}
-                placeholder="Add your comment..."
-                onChangeHandler={(newVal) => setCommentMsg(newVal)}
-              />
-            </div>
-
-            <div className="bg-gray-50 border-t border-gray-100 flex justify-end items-center p-3 space-x-2">
-              <span className="text-base text-gray-800 font-semibold mr-2">
-                Post As
-              </span>
-              {nounSetToDbType(NounSet.Nounder) in
-                groupTypeToMerkleTreeProofData && (
-                <div
-                  onClick={() => {
-                    setActiveNounSet(NounSet.Nounder);
-                  }}
+    <div className="mx-auto rounded-md">
+      <div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 relative overflow-clip">
+          {/* Sucessful Post Overlay */}
+          <AnimatePresence>
+            {isTimedSuccess && (
+              <motion.div
+                exit={{ opacity: 0 }}
+                className="bg-gray-100 rounded-lg absolute w-full h-full z-10 flex flex-col justify-center items-center"
+              >
+                <motion.div
+                  initial={{ y: -12, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  exit={{ y: 12, opacity: 0 }}
+                  className="text-4xl mb-2"
                 >
-                  <AnonPill
-                    nounSet={NounSet.Nounder}
-                    isActive={activeNounSet === NounSet.Nounder}
-                    proofURL="#"
-                    isClickable={false}
-                  />
-                </div>
-              )}
-
-              {nounSetToDbType(NounSet.SingleNoun) in
-                groupTypeToMerkleTreeProofData && (
-                <div
-                  onClick={() => {
-                    setActiveNounSet(NounSet.SingleNoun);
-                  }}
+                  🎉
+                </motion.div>
+                <motion.div
+                  initial={{ y: -12, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: 12, opacity: 0 }}
+                  transition={{ duration: 0.3, delay: 0.1 }}
+                  className="font-semibold text-base text-gray-800 max-w-[15rem] text-center"
                 >
-                  <AnonPill
-                    nounSet={NounSet.SingleNoun}
-                    isActive={activeNounSet === NounSet.SingleNoun}
-                    proofURL="#"
-                    isClickable={false}
-                  />
-                </div>
-              )}
+                  Your comment has been successfully posted.
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-              {nounSetToDbType(NounSet.ManyNouns) in
-                groupTypeToMerkleTreeProofData && (
-                <div
-                  onClick={() => {
-                    setActiveNounSet(NounSet.ManyNouns);
-                  }}
-                >
-                  <AnonPill
-                    nounSet={NounSet.ManyNouns}
-                    isActive={activeNounSet === NounSet.ManyNouns}
-                    proofURL="#"
-                    isClickable={false}
-                  />
-                </div>
-              )}
-            </div>
-            <div></div>
+          <div className="py-2 px-0">
+            <Textarea
+              value={commentMsg}
+              placeholder="Add your comment..."
+              onChangeHandler={(newVal) => setCommentMsg(newVal)}
+            />
           </div>
-          <div className="flex justify-end">
-            <button
-              onClick={() => {
-                if (!loadingText) {
-                  prepareProof();
-                }
-              }}
-              className="bg-black transition-all hover:bg-slate-900 hover:scale-105 active:scale-100 text-white font-semibold rounded-md px-4 py-2 mt-4"
-            >
-              {loadingText ? (
-                <div className="mx-16 py-1">
-                  <Spinner />
-                </div>
-              ) : (
-                `Post Anonymously`
-              )}
-            </button>
+
+          <div className="bg-gray-50 border-t border-gray-100 flex justify-end items-center p-3 space-x-2">
+            <span className="text-base text-gray-800 font-semibold mr-2">
+              Post As
+            </span>
+            {nounSetToDbType(NounSet.Nounder) in
+              groupTypeToMerkleTreeProofData && (
+              <div
+                onClick={() => {
+                  setActiveNounSet(NounSet.Nounder);
+                }}
+              >
+                <AnonPill
+                  nounSet={NounSet.Nounder}
+                  isActive={activeNounSet === NounSet.Nounder}
+                  proofURL="#"
+                  isClickable={false}
+                />
+              </div>
+            )}
+
+            {nounSetToDbType(NounSet.SingleNoun) in
+              groupTypeToMerkleTreeProofData && (
+              <div
+                onClick={() => {
+                  setActiveNounSet(NounSet.SingleNoun);
+                }}
+              >
+                <AnonPill
+                  nounSet={NounSet.SingleNoun}
+                  isActive={activeNounSet === NounSet.SingleNoun}
+                  proofURL="#"
+                  isClickable={false}
+                />
+              </div>
+            )}
+
+            {nounSetToDbType(NounSet.ManyNouns) in
+              groupTypeToMerkleTreeProofData && (
+              <div
+                onClick={() => {
+                  setActiveNounSet(NounSet.ManyNouns);
+                }}
+              >
+                <AnonPill
+                  nounSet={NounSet.ManyNouns}
+                  isActive={activeNounSet === NounSet.ManyNouns}
+                  proofURL="#"
+                  isClickable={false}
+                />
+              </div>
+            )}
           </div>
+          <div></div>
         </div>
-      ) : null}
+        <div className="flex justify-end">
+          <button
+            onClick={prepareProof}
+            className="bg-black transition-all hover:bg-slate-900 hover:scale-105 active:scale-100 text-white font-semibold rounded-md px-4 py-2 mt-4"
+          >
+            {loadingText ? (
+              <div className="mx-16 py-1">
+                <Spinner />
+              </div>
+            ) : (
+              `Post Anonymously`
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

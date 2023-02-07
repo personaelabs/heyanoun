@@ -30,7 +30,9 @@ async function verifyRoot(
 ): Promise<boolean> {
   const group = await prisma.group.findFirst({
     where: {
-      propId: Number(propId),
+      prop: {
+        num: Number(propId),
+      },
       typeId: Number(groupType),
     },
   });
@@ -70,13 +72,17 @@ export default async function submit(
     const verifiedProof = await verifyProof(
       [
         root,
-        publicSignatureData.eip712Value.propId,
+        // NOTE: when propId = -1, 2^32-1 must be passed to snarkjs
+        publicSignatureData.eip712Value.propId === "-1"
+          ? "4294967295"
+          : publicSignatureData.eip712Value.propId,
         publicSignatureData.eip712Value.groupType,
         ..._.flattenDeep(TPreComputes).map((el: any) => el.toString()),
         ..._.flattenDeep(U).map((el: any) => el.toString()),
       ],
       proof
     );
+    console.log(`Verified proof: ${verifiedProof}`);
 
     if (!verifiedProof) {
       res.status(400).send("proof is not valid!");
