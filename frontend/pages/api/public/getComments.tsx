@@ -8,8 +8,8 @@ const request = async (
 ) => {
   try {
     const propId = req.query.propId ? parseInt(`${req.query.propId}`) : -1;
-    const count = Number.parseInt(`${req.query.count}`);
-    const offset = Number.parseInt(`${req.query.offset}`);
+    const count = parseInt(`${req.query.count}`);
+    const offset = req.query.offset ? parseInt(`${req.query.offset}`) : 0;
 
     if (!count) {
       res.status(404).json({ err: "Missing count" });
