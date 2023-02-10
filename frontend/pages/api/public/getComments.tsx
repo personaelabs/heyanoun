@@ -8,7 +8,7 @@ const request = async (
 ) => {
   try {
     const propId = `${req.query.propId}`;
-    const count = Math.max(Number.parseInt(`${req.query.count}`), 100);
+    const count = Math.min(Number.parseInt(`${req.query.count}`), 100);
     const offset = Number.parseInt(`${req.query.offset}`);
 
     if (!propId) {
