@@ -7,20 +7,18 @@ const request = async (
   res: NextApiResponse<{} | ErrorResponse>
 ) => {
   try {
-    const propId = `${req.query.propId}`;
+    const propId = req.query.propId ? parseInt(`${req.query.propId}`) : -1;
     const count = Number.parseInt(`${req.query.count}`);
     const offset = Number.parseInt(`${req.query.offset}`);
 
-    if (!propId) {
-      res.status(404).json({ err: "Missing prop ID or group ID" });
-    } else if (!count) {
+    if (!count) {
       res.status(404).json({ err: "Missing count" });
     } else if (!offset && offset !== 0) {
       res.status(404).json({ err: "Missing offset" });
     } else {
       const prop = await prisma.prop.findFirst({
         where: {
-          num: parseInt(propId),
+          num: propId,
         },
         select: {
           Comments: true,
