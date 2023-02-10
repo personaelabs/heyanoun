@@ -11,7 +11,6 @@ const request = async (
     const count = Number.parseInt(`${req.query.count}`);
     const offset = Number.parseInt(`${req.query.offset}`);
 
-    console.log(propId, count, offset);
     if (!propId) {
       res.status(404).json({ err: "Missing prop ID or group ID" });
     } else if (!count) {
