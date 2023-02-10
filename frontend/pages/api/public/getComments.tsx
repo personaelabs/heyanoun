@@ -8,7 +8,7 @@ const request = async (
 ) => {
   try {
     const propId = `${req.query.propId}`;
-    const count = Math.min(Number.parseInt(`${req.query.count}`), 100);
+    const count = Number.parseInt(`${req.query.count}`);
     const offset = Number.parseInt(`${req.query.offset}`);
 
     if (!propId) {
@@ -27,7 +27,8 @@ const request = async (
         },
       });
       const firstId = offset;
-      const secondId = firstId + count;
+      //enforce hard limit of 100 comments per request to avoid response payload bloating
+      const secondId = firstId + Math.min(count, 100);
       if (!prop) {
         res
           .status(404)
