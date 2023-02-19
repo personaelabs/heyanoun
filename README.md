@@ -16,7 +16,7 @@ Sometimes all opinions on a prop aren't expressed, it's not always easy to say w
 
 ### Thesis
 
-We built heyanoun to allow more nouners to express what they believe while mantaining anonymity. Heyanoun allows Nouners to post credible (more on this below) pseudonymous messages at [heyanoun.xyz](https://www.heyanoun.xyz/) which can viewed on the website or on Twitter via our [bot](https://twitter.com/heyanoun), posted in [@coinfessions](https://twitter.com/coinfessions) style. Currently, heyanoun is scoped to props, which means for a given prop, you can post as
+We built heyanoun to allow more nouners to express what they believe while maintaining anonymity. Heyanoun allows Nouners to post credible (more on this below) pseudonymous messages at [heyanoun.xyz](https://www.heyanoun.xyz/) which can be viewed on the website or on Twitter via our [bot](https://twitter.com/heyanoun), posted in [@coinfessions](https://twitter.com/coinfessions) style. Currently, heyanoun is scoped to props, which means for a given prop, you can post as
 
 1. a snapshotted holder of >= 1 noun
 2. a snapshotted holder of >= 2 nouns
@@ -29,7 +29,7 @@ Snapshotted here refers to whether you satisfy the predicate above at the time o
 
 ### What do we mean by credible pseudonymous messages?
 
-**Every message posted is paired with a [zkSNARK](https://en.wikipedia.org/wiki/Non-interactive_zero-knowledge_proof) proof that, using cryptography, asserts a given message correctly satisfies the predicate we define above without revealing the identity of the poster of the message.** In other words, every anonymous message posted is paired with a proof that asserts that the original poster of this message has an Etherem address that is indeed a snapshotted holder of {>= 1, >= 2 nouns or is a nounder} depending on the claim and that the message posted is what we claim it to be. These proofs are public and anyone can verify for themself. This is valuable because
+**Every message posted is paired with a [zkSNARK](https://en.wikipedia.org/wiki/Non-interactive_zero-knowledge_proof) proof that, using cryptography, asserts a given message correctly satisfies the predicate we define above without revealing the identity of the poster of the message.** In other words, every anonymous message posted is paired with a proof that asserts that the original poster of this message has an Ethereum address that is indeed a snapshotted holder of {>= 1, >= 2 nouns or is a nounder} depending on the claim and that the message posted is what we claim it to be. These proofs are public and anyone can verify for themself. This is valuable because
 
 1. it allows **any individual to trustlessly verify that a message is valid** (i.e. posted by a Nouner and was not tampered with)
 2. it allows Nouners to be able to honestly voice their opinions about props because their **anonymity is guaranteed and they do not have to trust anyone** (for example the operators of this service) to not dox them
@@ -61,7 +61,7 @@ The high-level idea of the circuit construction amounts to
 2. check that the address corresponding to this public key is in a merkle tree (the exact merkle tree depends on the prop group type this message is for)
 ```
 
-This functions the same (i.e. does the same high-level check) as the [circuits used in heyanon](https://github.com/personaelabs/circuits/blob/master/circuits/dizkus.circom), however in order to improve the user experience (reduce the amount of time it takes to generate a proof), heyanoun is the first production usage of new [research](https://github.com/personaelabs/efficient-zk-ecdsa) out of [Personae Labs](https://personaelabs.org/) that dramatically improves the cost ECDSA signatures. The linked repo contains more benchmarks and details about the inner workings of this new scheme for verifiying ECDSA signatures, but as far as our circuit goes, some benchmarks below:
+This functions the same (i.e. does the same high-level check) as the [circuits used in heyanon](https://github.com/personaelabs/circuits/blob/master/circuits/dizkus.circom), however in order to improve the user experience (reduce the amount of time it takes to generate a proof), heyanoun is the first production usage of new [research](https://github.com/personaelabs/efficient-zk-ecdsa) out of [Personae Labs](https://personaelabs.org/) that dramatically improves the cost ECDSA signatures. The linked repo contains more benchmarks and details about the inner workings of this new scheme for verifying ECDSA signatures, but as far as our circuit goes, some benchmarks below:
 
 ```
 # of Wires: 387520
