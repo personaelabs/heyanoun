@@ -74,4 +74,19 @@ time to generate a proof in browser on an M1 Macbook Pro: ~30 seconds
 
 Note that because of the design of this scheme, [verifying](https://github.com/personaelabs/nouns150/blob/main/frontend/pages/api/submit.ts#L57-L82) a proof is valid amounts to more than just checking the 3 pairing points of a regular Groth16 proof, we also have to do some out of SNARK checks (more details [here](https://ethresear.ch/t/efficient-ecdsa-signature-verification-using-circom/13629)). All of the data, both the Groth16 proof, and the artifacts needed to do these out of SNARK checks are posted to IPFS so anyone can verify for themself a proof is rigorous and valid.
 
-All of our circuits can be found under the `circuits` directory, and you can build the circuit with `npm run build` and test the circuit after building it with `npm run test` within the circuits directory. Notes regarding the phase 2 trusted setup for our production circuits can be found [here](https://github.com/personaelabs/nouns150/blob/main/circuits/setup.MD).
+All of our circuits can be found under the `circuits` directory.
+
+To install circuit dependencies:
+
+1. `git submodule init && git submodule update` in the root directory
+2. `curl -O https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_20.ptau`
+	- The download link to the ptau file can also be found in https://github.com/iden3/snarkjs
+3. `mv powersOfTau28_hez_final_20.ptau circuits/powersOfTau28_hez_final_20.ptau`
+4. `cd circuits/circuits/packages/efficient-zk-sig && npm install && cd ../../../`
+5. `npm install`
+
+To build the circuit run `npm run build` in the `circuits` directory.
+
+To test the circuit run `npm run test` in the `circuits` directory.
+
+Notes regarding the phase 2 trusted setup for our production circuits can be found [here](https://github.com/personaelabs/nouns150/blob/main/circuits/setup.MD).
