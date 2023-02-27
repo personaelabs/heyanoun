@@ -6,6 +6,7 @@ import {
   leafDataToAddress,
   splitToRegisters,
   EIP712Value,
+  POST_CHAR_LIMIT,
 } from "../utils/utils";
 import AnonPill, { NounSet, nounSetToDbType } from "./anonPill";
 import { ethers } from "ethers";
@@ -160,6 +161,15 @@ const CommentWriter: React.FC<CommentWriterProps> = ({ propId }) => {
         });
         setLoadingText(undefined);
         console.error("Missing merkle tree data");
+        return;
+      } else if (commentMsg.length > POST_CHAR_LIMIT) {
+        toast.error(
+          "Comment is too long, please keep less than 600 characters!",
+          {
+            position: "bottom-right",
+          }
+        );
+        setLoadingText(undefined);
         return;
       }
       //TODO: add loading state or progress bar first time it downloads zkey

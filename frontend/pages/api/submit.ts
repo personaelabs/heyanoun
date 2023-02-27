@@ -8,7 +8,7 @@ import { prisma } from "../../utils/prisma";
 import vkey from "../../utils/verification_key.json";
 import _ from "lodash";
 import { HOST, postToIpfs } from "../../utils/ipfs";
-import { JSONStringifyCustom } from "../../utils/utils";
+import { JSONStringifyCustom, POST_CHAR_LIMIT } from "../../utils/utils";
 import { NounSet } from "../../components/anonPill";
 
 const snarkjs = require("snarkjs");
@@ -55,6 +55,11 @@ export default async function submit(
     const proof = body.proof;
     const commentMsg = body.commentMsg;
     const publicSignatureData: PublicSignatureData = body.publicSignatureData;
+
+    if (commentMsg.length > POST_CHAR_LIMIT) {
+      res.status(400).send("commentMsg is too long!");
+      return;
+    }
 
     if (
       !(await verifyRoot(
