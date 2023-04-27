@@ -38,15 +38,21 @@ const GeneralCommentPanel = () => {
           {isLoading ? (
             <Spinner />
           ) : data?.comments.length !== 0 ? (
-            data?.comments.map((comment) => (
-              <CommentView
-                key={comment.id}
-                createdAt={comment.createdAt}
-                groupType={Number(comment.groupType)}
-                message={comment.commentMsg}
-                proof={comment.ipfsProof}
-              />
-            ))
+            data?.comments
+              .sort(
+                (a, b) =>
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime()
+              )
+              .map((comment) => (
+                <CommentView
+                  key={comment.id}
+                  createdAt={comment.createdAt}
+                  groupType={Number(comment.groupType)}
+                  message={comment.commentMsg}
+                  proof={comment.ipfsProof}
+                />
+              ))
           ) : (
             <div className="py-1 px-2 flex row items-center justify-center">
               <p className="text-l">No comments yet!</p>
