@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useMemo, useState, useEffect } from "react";
 import { useAccount, useSignTypedData } from "wagmi";
+import { fetchTransaction } from "@wagmi/core";
 import { PointPreComputes } from "../types/zk";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,6 +16,7 @@ import AnonPill, { NounSet, nounSetToDbType } from "./anonPill";
 import { ethers } from "ethers";
 import { getSigPublicSignals } from "../utils/wasmPrecompute/wasmPrecompute.web";
 import { PublicSignatureData } from "../utils/wasmPrecompute/wasmPrecompute.common";
+import { fetchBonsaiProof } from "../utils/bonsai";
 import { downloadZKey } from "../utils/zkp";
 import localforage from "localforage";
 import axios from "axios";
@@ -121,7 +123,7 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
     }, [propGroups, address]);
 
   const merkleTreeProofData = React.useRef<MerkleTreeProofData>();
-  const [txHash, setTxHash] = React.useState<string>("");
+  const [txHash, setTxHash] = React.useState<`0x${string}`>("0x");
   const [commentMsg, setCommentMsg] = React.useState<string>("");
   const [loadingText, setLoadingText] = React.useState<string | undefined>(
     undefined
@@ -264,7 +266,14 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
     }
 
     try {
-      setLoadingText("Generating proof...");
+      setLoadingText("Fetching the transaction metadata...");
+      const txResponse = await fetchTransaction({ hash: txHash });
+
+      setLoadingText("Generating bonsai proof for merkle tree extension...");
+      const bonsaiProof = await fetchBonsaiProof(txResponse);
+      console.log(bonsaiProof);
+
+      setLoadingText("Generating inclusion proof...");
       if (!address) {
         toast.error("Please connect your wallet before trying to post!", {
           position: "bottom-right",

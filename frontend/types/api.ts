@@ -27,3 +27,10 @@ export interface PropGroupsPayload {
 export interface PropCommentsPayload {
   comments: Comment[];
 }
+
+export interface BonsaiResponse {
+  proof: `0x${string}`;
+  from: `0x${string}`;
+  to: `0x${string}`;
+  root: `0x${string}`;
+}

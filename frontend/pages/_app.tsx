@@ -9,6 +9,7 @@ import {
   chain,
   defaultChains,
 } from "wagmi";
+import "dotenv";
 import { infuraProvider } from "wagmi/providers/infura";
 
 import "@rainbow-me/rainbowkit/styles.css";
