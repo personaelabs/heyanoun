@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useMemo, useState, useEffect } from "react";
 import { useAccount, useSignTypedData } from "wagmi";
-import { fetchTransaction } from "@wagmi/core";
+import {
+  fetchTransaction, writeContract, prepareWriteContract } from "@wagmi/core";
 import { PointPreComputes } from "../types/zk";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { motion, AnimatePresence } from "framer-motion";
@@ -27,6 +28,7 @@ import Spinner from "../components/spinner";
 
 import { LeafPayload, PropGroupsPayload } from "../types/api";
 import { useQuery } from "@tanstack/react-query";
+import { anonAbuseAbi } from "../abis/AnonAbuse";
 
 import toast from "react-hot-toast";
 
@@ -272,6 +274,17 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
       setLoadingText("Generating bonsai proof for merkle tree extension...");
       const bonsaiProof = await fetchBonsaiProof(txResponse);
       console.log(bonsaiProof);
+
+      setLoadingText("Adding to victim list...");
+
+      const config = await prepareWriteContract({
+        address: '0x000',
+        abi: anonAbuseAbi,
+        functionName: 'entryPoint',
+        args: ['0xdead', '0xbeef', '0xc0ffee']
+      });
+
+      const { hash }  = await writeContract(config);
 
       setLoadingText("Generating inclusion proof...");
       if (!address) {
