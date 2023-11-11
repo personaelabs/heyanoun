@@ -64,10 +64,10 @@ model Comment {
 
   createdAt DateTime @default(now())
 
-  groupType Int 
+  groupType Int
   group    GroupType @relation(fields: [groupType], references: [id])
 
-  propNum Int 
+  propNum Int
   prop  Prop @relation(fields: [propNum], references: [num])
 
   ipfsProof String

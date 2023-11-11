@@ -110,7 +110,7 @@ const Home: NextPage = () => {
                   transition={{ duration: 0.3 }}
                   className="text-3xl md:text-5xl text-white font-bold leading-[40px] md:leading-14"
                 >
-                  Give Feedback On Proposals Anonymously
+                  Report malicious on-chain activity anonymously.
                 </motion.h1>
                 <motion.p
                   initial={{ y: -12, opacity: 0 }}
@@ -118,15 +118,11 @@ const Home: NextPage = () => {
                   transition={{ duration: 0.3, delay: 0.1 }}
                   className="mt-4 text-lg md:text-xl font-normal md:leading-8 text-white"
                 >
-                  Anoun allows noun-holders to give feedback on proposals while
-                  maintaining their privacy using zero-knowledge proofs.{" "}
+                  Anon-Abuse allows victims to report scams or phishing attacks without
+                  revealing identity using zero-knowledge proofs.{" "}
                 </motion.p>
               </div>
             </div>
-          </div>
-          <div className="flex justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="w-40" src="nouns.png" alt="nouns" />
           </div>
         </div>
 
@@ -145,7 +141,7 @@ const Home: NextPage = () => {
                   setTabState(0);
                 }}
               >
-                Proposals
+                History
               </button>
               <button
                 type="button"
@@ -159,7 +155,7 @@ const Home: NextPage = () => {
                   setTabState(1);
                 }}
               >
-                General
+                Report
               </button>
             </div>
             <div className="mt-6">

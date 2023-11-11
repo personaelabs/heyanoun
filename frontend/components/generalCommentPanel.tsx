@@ -21,14 +21,13 @@ const GeneralCommentPanel = () => {
     <div className="flex justify-center items-center">
       <div className="space-y-4">
         <h2 className="ml-2 text-2xl font-semibold text-gray-800">
-          What are some some comments you have about the DAO generally?
+          What scam/phishing do you want to report?
         </h2>
         <div className="p-6 py-3 rounded-lg bg-gray-100 border border-gray-200">
           <span className="text-lg">❤️</span>
           <span className="text-base ml-1">
-            We ask to please keep the feedback constructive and respectful. A
-            sound argument wrapped in a personal attack will typically fall on
-            deaf ears.
+            We ask to submit scam/phishing reports with
+            block number and transaction hash
           </span>
         </div>
 

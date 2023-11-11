@@ -348,56 +348,6 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
           </div>
 
           <div className="bg-gray-50 border-t border-gray-100 flex justify-end items-center p-3 space-x-2">
-            <span className="text-base text-gray-800 font-semibold mr-2">
-              Post As
-            </span>
-            {nounSetToDbType(NounSet.Nounder) in
-              groupTypeToMerkleTreeProofData && (
-              <div
-                onClick={() => {
-                  setActiveNounSet(NounSet.Nounder);
-                }}
-              >
-                <AnonPill
-                  nounSet={NounSet.Nounder}
-                  isActive={activeNounSet === NounSet.Nounder}
-                  proofURL="#"
-                  isClickable={false}
-                />
-              </div>
-            )}
-
-            {nounSetToDbType(NounSet.SingleNoun) in
-              groupTypeToMerkleTreeProofData && (
-              <div
-                onClick={() => {
-                  setActiveNounSet(NounSet.SingleNoun);
-                }}
-              >
-                <AnonPill
-                  nounSet={NounSet.SingleNoun}
-                  isActive={activeNounSet === NounSet.SingleNoun}
-                  proofURL="#"
-                  isClickable={false}
-                />
-              </div>
-            )}
-
-            {nounSetToDbType(NounSet.ManyNouns) in
-              groupTypeToMerkleTreeProofData && (
-              <div
-                onClick={() => {
-                  setActiveNounSet(NounSet.ManyNouns);
-                }}
-              >
-                <AnonPill
-                  nounSet={NounSet.ManyNouns}
-                  isActive={activeNounSet === NounSet.ManyNouns}
-                  proofURL="#"
-                  isClickable={false}
-                />
-              </div>
-            )}
           </div>
           <div></div>
         </div>
