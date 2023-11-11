@@ -19,6 +19,7 @@ import { downloadZKey } from "../utils/zkp";
 import localforage from "localforage";
 import axios from "axios";
 import { Textarea } from "./textarea";
+import { TextInput } from "./textinput";
 import { toUtf8Bytes } from "ethers/lib/utils";
 import Spinner from "../components/spinner";
 
@@ -120,6 +121,7 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
     }, [propGroups, address]);
 
   const merkleTreeProofData = React.useRef<MerkleTreeProofData>();
+  const [txHash, setTxHash] = React.useState<string>("");
   const [commentMsg, setCommentMsg] = React.useState<string>("");
   const [loadingText, setLoadingText] = React.useState<string | undefined>(
     undefined
@@ -338,6 +340,16 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
               </motion.div>
             )}
           </AnimatePresence>
+
+          <div className="py-2 px-0">
+            <TextInput
+              value={txHash}
+              placeholder="Transaction Hash"
+              onChangeHandler={(newVal) => setTxHash(newVal)}
+            />
+          </div>
+          <div className="bg-gray-50 border-t border-gray-100 flex justify-end items-center p-3 space-x-2">
+          </div>
 
           <div className="py-2 px-0">
             <Textarea
