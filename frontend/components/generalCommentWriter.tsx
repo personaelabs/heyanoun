@@ -2,7 +2,12 @@ import * as React from "react";
 import { useMemo, useState, useEffect } from "react";
 import { useAccount, useSignTypedData } from "wagmi";
 import {
-  fetchTransaction, writeContract, prepareWriteContract } from "@wagmi/core";
+  fetchTransaction,
+  writeContract,
+  prepareWriteContract,
+  waitForTransaction,
+  readContract
+} from "@wagmi/core";
 import { PointPreComputes } from "../types/zk";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,6 +17,8 @@ import {
   splitToRegisters,
   EIP712Value,
   POST_CHAR_LIMIT,
+  addHexPrefix,
+  prepareMerkleRootProof
 } from "../utils/utils";
 import AnonPill, { NounSet, nounSetToDbType } from "./anonPill";
 import { ethers } from "ethers";
@@ -29,6 +36,7 @@ import Spinner from "../components/spinner";
 import { LeafPayload, PropGroupsPayload } from "../types/api";
 import { useQuery } from "@tanstack/react-query";
 import { anonAbuseAbi } from "../abis/AnonAbuse";
+import { createMerkleTree } from "../utils/merkleTree";
 
 import toast from "react-hot-toast";
 
@@ -49,26 +57,17 @@ interface MerkleTreeProofData {
 }
 
 const domain = {
-  name: "heyanoun-prop-150",
+  name: "anon-abuse-report",
   version: "1",
   chainId: 1,
   verifyingContract: "0x0000000000000000000000000000000000000000",
 } as const;
 
 const types = {
-  NounSignature: [
-    { name: "propId", type: "string" },
-    { name: "groupType", type: "string" },
+  Report: [
     { name: "msgHash", type: "string" },
   ],
 } as const;
-
-const getPropGroups = async (propId: number) =>
-  (
-    await axios.get<PropGroupsPayload>("/api/getPropGroups", {
-      params: { propId },
-    })
-  ).data;
 
 const CommentWriter: React.FC<CommentWriterProps> = () => {
   const propId = -1;
@@ -86,44 +85,6 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
     }
   }, [isTimedSuccess]);
 
-  const {
-    isLoading: propGroupsLoading,
-    data: propGroups,
-    refetch,
-  } = useQuery<PropGroupsPayload>({
-    queryKey: ["groups"],
-    queryFn: () => getPropGroups(propId),
-    retry: 1,
-    enabled: true,
-    staleTime: 1000,
-  });
-
-  const groupTypeToMerkleTreeProofData: { [key: string]: MerkleTreeProofData } =
-    useMemo(() => {
-      let ret: { [key: string]: MerkleTreeProofData } = {};
-      if (propGroups) {
-        for (const { root, leaves, type } of propGroups.groups) {
-          const leaf = leaves.find(
-            (el: LeafPayload) =>
-              address &&
-              leafDataToAddress(el.data).toLowerCase() === address.toLowerCase()
-          );
-
-          if (leaf) {
-            ret[type] = {
-              root,
-              pathElements: leaf.path,
-              pathIndices: leaf.indices,
-            };
-          }
-        }
-
-        return ret;
-      } else {
-        return {};
-      }
-    }, [propGroups, address]);
-
   const merkleTreeProofData = React.useRef<MerkleTreeProofData>();
   const [txHash, setTxHash] = React.useState<`0x${string}`>("0x");
   const [commentMsg, setCommentMsg] = React.useState<string>("");
@@ -135,16 +96,10 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
     boolean | undefined
   >(undefined);
 
-  const [activeNounSet, setActiveNounSet] = useState<NounSet>(
-    NounSet.SingleNoun
-  );
-
   const { data, error, isLoading, signTypedData } = useSignTypedData({
     domain,
     types,
     value: {
-      propId: `${propId}`,
-      groupType: `${activeNounSet}`,
       msgHash: ethers.utils.keccak256(toUtf8Bytes(commentMsg)),
     } as const,
     async onSuccess(data, variables) {
@@ -201,8 +156,8 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
       const proofInputs = {
         ...artifacts,
         ...merkleTreeProofData.current,
-        propId: propId.toString(),
-        groupType: activeNounSet.toString(),
+        propId: "",
+        groupType: "",
       };
 
       const zkeyDb = await localforage.getItem("setMembership_final.zkey");
@@ -243,7 +198,6 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
           toast.success("Proof submitted successfully!", {
             position: "bottom-right",
           });
-          refetch();
           setSuccessProofGen(true);
           // TODO add toast showing success and link to proof
           setTimedSucess(true);
@@ -252,7 +206,7 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
         }
       };
     },
-    [activeNounSet, commentMsg, propId, refetch]
+    [commentMsg, propId]
   );
 
   const prepareProof = React.useCallback(async () => {
@@ -271,22 +225,36 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
       setLoadingText("Fetching the transaction metadata...");
       const txResponse = await fetchTransaction({ hash: txHash });
 
+      const victim = txResponse.from!;
+      const attacker = txResponse.to!;
+
       setLoadingText("Generating bonsai proof for merkle tree extension...");
       const bonsaiProof = await fetchBonsaiProof(txResponse);
       console.log(bonsaiProof);
 
       setLoadingText("Adding to victim list...");
-
+      // TODO: send bonsai proof.
       const config = await prepareWriteContract({
-        address: '0x000',
+        address: "0x000",
         abi: anonAbuseAbi,
-        functionName: 'entryPoint',
-        args: ['0xdead', '0xbeef', '0xc0ffee']
+        functionName: "entryPoint",
+        args: ["0x00", addHexPrefix(attacker), addHexPrefix(victim)]
       });
 
-      const { hash }  = await writeContract(config);
+      const { hash: entryPointTxHash } = await writeContract(config);
 
+      setLoadingText('Waiting for transaction to complete...')
+      const receipt = await waitForTransaction({ hash: entryPointTxHash });
+      console.log(receipt);
+
+      const result = await readContract({
+        address: '0x000',
+        abi: anonAbuseAbi,
+        functionName: "getLeavesFromAttackerAddress",
+        args: [addHexPrefix(attacker)]
+      });
       setLoadingText("Generating inclusion proof...");
+
       if (!address) {
         toast.error("Please connect your wallet before trying to post!", {
           position: "bottom-right",
@@ -296,23 +264,10 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
         return;
       }
 
-      merkleTreeProofData.current =
-        groupTypeToMerkleTreeProofData[nounSetToDbType(activeNounSet)];
-
-      // TODO: REMOVE THIS AFTER TESTING, generating dummy merkle tree to test proof generation works
-      //       if you want to test non-noun holding addresses
-      // const { pathElements, pathIndices, pathRoot } = await createMerkleTree(
-      //   "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
-      //   [
-      //     "0x926B47C42Ce6BC92242c080CF8fAFEd34a164017",
-      //     "0x199D5ED7F45F4eE35960cF22EAde2076e95B253F",
-      //   ]
-      // );
-      // const merkleTreeData = prepareMerkleRootProof(
-      //   pathElements,
-      //   pathIndices,
-      //   pathRoot
-      // );
+      const { pathElements, pathIndices, pathRoot } = await createMerkleTree(
+        address, result.map((el: string) => (el.substring(2))));
+      merkleTreeProofData.current = prepareMerkleRootProof(
+        pathElements, pathIndices, pathRoot);
 
       // triggers callback which will call generateProof when it's done
       signTypedData();
@@ -323,12 +278,7 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
         position: "bottom-right",
       });
     }
-  }, [activeNounSet, address, groupTypeToMerkleTreeProofData, signTypedData]);
-
-  const canPost = React.useMemo(
-    () => Object.keys(groupTypeToMerkleTreeProofData).length !== 0,
-    [groupTypeToMerkleTreeProofData]
-  );
+  }, [address, signTypedData]);
 
   return (
     <div className="mx-auto rounded-md">
@@ -367,7 +317,7 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
             <TextInput
               value={txHash}
               placeholder="Transaction Hash"
-              onChangeHandler={(newVal) => setTxHash(newVal)}
+              onChangeHandler={(newVal) => setTxHash(addHexPrefix(newVal))}
             />
           </div>
           <div className="bg-gray-50 border-t border-gray-100 flex justify-end items-center p-3 space-x-2">

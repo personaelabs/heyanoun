@@ -7,7 +7,7 @@ import { Leaf } from "@prisma/client";
 import { nounderAddresses } from "./nounders";
 
 export const POST_CHAR_LIMIT = 600;
-const addHexPrefix = (str: string) => `0x${str}`;
+export const addHexPrefix = (str: string): `0x${string}` => `0x${str}`;
 
 export const splitToRegisters = (value: any) => {
   const registers = [];

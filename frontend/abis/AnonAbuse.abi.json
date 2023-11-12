@@ -1,4 +1,4 @@
-export const anonAbuseAbi = [
+[
   {
     "anonymous": false,
     "inputs": [
@@ -123,4 +123,4 @@ export const anonAbuseAbi = [
     "stateMutability": "view",
     "type": "function"
   }
-] as const;
+]
