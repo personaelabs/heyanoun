@@ -69,6 +69,8 @@ const types = {
   ],
 } as const;
 
+const anonAbuseContract = process.env.ANON_ABUSE_CONTRACT;
+
 const CommentWriter: React.FC<CommentWriterProps> = () => {
   const propId = -1;
   const { address } = useAccount();
@@ -228,6 +230,13 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
       const victim = txResponse.from!;
       const attacker = txResponse.to!;
 
+      const preFetchResult = await readContract({
+        address: anonAbuseContract,
+        abi: anonAbuseAbi,
+        functionName: "getLeavesFromAttackerAddress",
+        args: [addHexPrefix(attacker)]
+      });
+ 
       setLoadingText("Generating bonsai proof for merkle tree extension...");
       const bonsaiProof = await fetchBonsaiProof(txResponse);
       console.log(bonsaiProof);
@@ -235,7 +244,7 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
       setLoadingText("Adding to victim list...");
       // TODO: send bonsai proof.
       const config = await prepareWriteContract({
-        address: "0x000",
+        address: anonAbuseContract,
         abi: anonAbuseAbi,
         functionName: "entryPoint",
         args: ["0x00", addHexPrefix(attacker), addHexPrefix(victim)]
@@ -248,7 +257,7 @@ const CommentWriter: React.FC<CommentWriterProps> = () => {
       console.log(receipt);
 
       const result = await readContract({
-        address: '0x000',
+        address: anonAbuseContract,
         abi: anonAbuseAbi,
         functionName: "getLeavesFromAttackerAddress",
         args: [addHexPrefix(attacker)]
